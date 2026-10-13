@@ -25,12 +25,13 @@ input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-ra
 <body>
 <header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color:white">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
 <nav>
-<button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
-<button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
-<button data-page="cartPage" onclick="showPage('cartPage',this)">🛒 Cart</button>
-<button data-page="history" onclick="showPage('history',this)">📋 History & Track</button>
-<button data-page="aboutPage" onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
-<button onclick="openAdmin()" style="background:#78716c;color:white">🔐 Owner Status</button>
+  <button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
+  <button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
+  <button data-page="cartPage" onclick="showPage('cartPage',this)">🛒 Cart</button>
+  <button data-page="history" onclick="showPage('history',this)">📋 Order History</button>
+  <button data-page="history" onclick="showPage('history',this);document.getElementById('trackIdInput').focus()">🔎 Track Status</button>
+  <button data-page="aboutPage" onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
+  <button data-page="adminPage" onclick="openAdmin(this)" style="background:#78716c;color:white">🔐 Owner Admin</button>
 </nav>
 <main>
 <section id="home" class="page active">
@@ -60,7 +61,6 @@ input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-ra
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
 /* IMPORTANT: Replace YOUR_API_KEY and YOUR_APP_ID with your Firebase Web App config values. */
 const firebaseConfig = {
   apiKey: "AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U",
@@ -82,17 +82,35 @@ const firebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseC
 try { if(firebaseConfigured) db=getFirestore(initializeApp(firebaseConfig)); } catch(err){ console.error("Firebase initialization error:",err); }
 const $=id=>document.getElementById(id);
 function money(n){return Math.round(Number(n)||0).toString()}
-window.showPage=(id,btn)=>{
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+window.showPage = (id, btn) => {
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
+  });
+  const page = document.getElementById(id);
+  if (page) page.classList.add("active");
+
+  document.querySelectorAll("nav button").forEach(b => {
+    b.classList.remove("active");
+  });
+  if (btn) btn.classList.add("active");
+
+  if (id === "history") renderHistory();
+}; document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  const page=$(id); if(page)page.classList.add("active");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
  if(id==="history")renderHistory();
 };
-window.openAdmin=()=>{const entered=prompt("Owner access only\nEnter your 4-digit PIN:");if(entered===null)return;if(entered===OWNER_PIN){showPage("adminPage");}else{alert("Wrong PIN. Owner page access denied.");}};
-const FOOD_PHOTOS={
-  "samosa":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
-  "kachori":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
+window.openAdmin = (btn) => {
+  const entered = prompt("Owner access only\nEnter your 4-digit PIN:");
+  if (entered === null) return;
+  if (entered === OWNER_PIN) {
+    showPage("adminPage", btn);
+  } else {
+    alert("Wrong PIN. Owner page access denied.");
+  }
+};
+const FOOD_PHOTOS={ "samosa":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80", "kachori":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
   "samosa chaat":"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80",
   "sundal chaat":"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
   "pani puri":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
