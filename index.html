@@ -14,7 +14,7 @@ nav button.active{background:#ea580c;color:white}
 main{max-width:900px;margin:auto;padding:10px}.page{display:none}.page.active{display:block}
 .card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:12px;margin:10px 0}
 .menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.card img{width:100%;height:120px;object-fit:cover;border-radius:8px;background:#ffedd5}
+.food-photo{display:block;width:100%;height:145px;object-fit:cover;object-position:center;border-radius:8px;background:#ffedd5;opacity:1;transition:none}.food-fallback{height:145px;border-radius:8px;background:#fff1df;display:flex;align-items:center;justify-content:center;font-size:48px}
 .btn{border:0;border-radius:8px;padding:10px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px}
 input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:8px;margin:5px 0;font:inherit}
 .small{font-size:12px;color:#78716c}.price{font-weight:bold;color:#c2410c}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -23,7 +23,7 @@ input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-ra
 </style>
 </head>
 <body>
-<header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color: purple">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
+<header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color:white">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
 <nav>
 <button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
 <button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
@@ -70,11 +70,13 @@ const firebaseConfig = {
   messagingSenderId: "197160794283",
   appId: "1:197160794283:web:48971b82bb1b42fdaf1fee"
 };
-/* Replace with your shop WhatsApp number: country code + number, digits only. */
+/* Shree Chaat Corner WhatsApp: India country code + mobile number */
 const SHOP_WHATSAPP = "918428656328";
+/* Basic owner PIN lock. Change this PIN before publishing. Note: a PIN stored in public HTML is not strong security; use Firebase Authentication + Firestore rules for true owner-only access. */
+const OWNER_PIN = "2580";
 const PACKING_CHARGE = 0; // Set your packing fee here if needed.
 const items=[
-{id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa chaat"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal chaat"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"cheese puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"vegetable sandwich"},{id:11,n:"Veg Bread Cheese Sandwich",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku snack"},{id:13,n:"Murukku Cheese Sandwich",p:70,s:"cheese sandwich"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra snack"},{id:15,n:"Khakhra Cheese Sandwich",p:90,s:"cheese sandwich"},{id:16,n:"Roti Sabji",p:30,s:"roti curry"},{id:17,n:"Triangle Paratha Sabji",p:40,s:"paratha curry"},{id:18,n:"Methi Paratha Sabji",p:50,s:"methi paratha"},{id:19,n:"Aaloo Paratha Sabji",p:60,s:"aloo paratha"},{id:20,n:"Special Paneer Sabji",p:50,s:"paneer curry"},{id:21,n:"Water Bottle ₹10",p:10,s:"water bottle"},{id:22,n:"Water Bottle ₹20",p:20,s:"water bottle"},{id:23,n:"Cool Drink ₹10",p:10,s:"soft drink bottle"},{id:24,n:"Cool Drink ₹20",p:20,s:"soft drink bottle"}];
+{id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa chaat"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal chaat"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"cheese puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"vegetable sandwich"},{id:11,n:"Veg Bread Cheese Sandwich",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku snack"},{id:13,n:"Murukku Cheese Sandwich",p:70,s:"cheese sandwich"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra snack"},{id:15,n:"Khakhra Cheese Sandwich",p:90,s:"cheese sandwich"},{id:16,n:"Roti Sabji",p:30,s:"roti curry"},{id:17,n:"Triangle Paratha Sabji",p:40,s:"paratha curry"},{id:18,n:"Methi Paratha Sabji",p:50,s:"methi paratha"},{id:19,n:"Aaloo Paratha Sabji",p:60,s:"aloo paratha"},{id:20,n:"Special Sabji",p:50,s:"paneer curry"},{id:21,n:"Water Bottle ₹10",p:10,s:"water bottle"},{id:22,n:"Water Bottle ₹20",p:20,s:"water bottle"},{id:23,n:"Cool Drink ₹10",p:10,s:"soft drink bottle"},{id:24,n:"Cool Drink ₹20",p:20,s:"soft drink bottle"}];
 const cart={}; let db=null;
 const firebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.appId !== "YOUR_APP_ID";
 try { if(firebaseConfigured) db=getFirestore(initializeApp(firebaseConfig)); } catch(err){ console.error("Firebase initialization error:",err); }
@@ -87,9 +89,29 @@ window.showPage=(id,btn)=>{
  if(btn)btn.classList.add("active");
  if(id==="history")renderHistory();
 };
-window.openAdmin=()=>{showPage("adminPage");};
+window.openAdmin=()=>{const entered=prompt("Owner access only\nEnter your 4-digit PIN:");if(entered===null)return;if(entered===OWNER_PIN){showPage("adminPage");}else{alert("Wrong PIN. Owner page access denied.");}};
+const FOOD_PHOTOS={
+  "samosa":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
+  "kachori":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
+  "samosa chaat":"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80",
+  "sundal chaat":"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
+  "pani puri":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
+  "dahi puri":"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80",
+  "cheese puri":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80",
+  "vegetable sandwich":"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80",
+  "cheese sandwich":"https://images.unsplash.com/photo-1539252554453-80ab65ce3586?auto=format&fit=crop&w=600&q=80",
+  "murukku snack":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
+  "khakhra snack":"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
+  "roti curry":"https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80",
+  "paratha curry":"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80",
+  "methi paratha":"https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80",
+  "aloo paratha":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
+  "paneer curry":"https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80",
+  "water bottle":"https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
+  "soft drink bottle":"https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=600&q=80"
+};
 function renderMenu(){
- $("menu").innerHTML=items.map(i=>{const qty=cart[i.id]||0;return `<div class="card"><img loading="lazy" src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}" alt="${i.n}" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=400'"><div style="margin-top:8px"><b>${i.n}</b><br><span class="price">₹${i.p}</span></div><div style="margin-top:8px">${qty>0?`<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${qty} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`:`<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`}</div></div>`}).join("");
+ $("menu").innerHTML=items.map(i=>{const qty=cart[i.id]||0;const photo=FOOD_PHOTOS[i.s]||FOOD_PHOTOS["samosa"];return `<div class="card"><img class="food-photo" loading="lazy" decoding="async" src="${photo}" alt="${i.n}" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\"food-fallback\" role=\"img\" aria-label=\"Food image unavailable\">🍽️</div>')"><div style="margin-top:8px"><b>${i.n}</b><br><span class="price">₹${i.p}</span></div><div style="margin-top:8px">${qty>0?`<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${qty} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`:`<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`}</div></div>`}).join("");
 }
 function calc(){
  const subtotal=items.reduce((sum,i)=>sum+i.p*(cart[i.id]||0),0);
@@ -131,7 +153,7 @@ window.placeOrder=async()=>{
  const summary=orderItems.map(i=>`${i.name} × ${i.qty} = ₹${i.price*i.qty}`).join("\n");
  const message=`*Shree Chaat Corner Order*%0A*Order ID:* ${orderId}%0A*Name:* ${name}%0A*Mobile:* ${phone}%0A*Order Type:* ${type}%0A${addr?"*Address:* "+addr+"%0A":""}${type==="Home Delivery"?"*Distance:* "+order.distance+" km%0A":""}%0A${summary}%0A*Items:* ₹${c.subtotal}%0A*Delivery:* ₹${c.delivery}%0A*Packing:* ₹${c.packing}%0A*TOTAL:* ₹${c.total}%0A${notes?"*Notes:* "+notes+"%0A":""}`;
  const wa=SHOP_WHATSAPP.replace(/\D/g,"");
- if(!wa||wa.endsWith("XXXXXXXXXX")){alert("Order created with ID "+orderId+". Replace SHOP_WHATSAPP in the code with your shop's WhatsApp number.");renderHistory();showPage("history");return}
+ if(!wa||wa.endsWith("XXXXXXXXXX")){alert("Order created with ID "+orderId+". Check the SHOP_WHATSAPP number in the code.");renderHistory();showPage("history");return}
  window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(message.replace(/%0A/g,"\n")),"_blank");
  alert("Order ID: "+orderId+"\nWhatsApp will open. Press Send there to send your order.");
  renderHistory();showPage("history");
