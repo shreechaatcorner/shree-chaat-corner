@@ -23,11 +23,12 @@
   <button onclick="showPage('menuPage')">🍽️ Menu</button>
   <button onclick="showPage('cartPage')">🛒 Cart</button>
   <button onclick="showPage('trackPage')">🔍 Track</button>
+  <button onclick="showPage('adminPage')" style="background:#78716c;color:white;">👑 Owner</button>
 </nav>
 <main>
   <section id="home" class="page active">
     <div class="card" style="text-align:center;background:#ffedd5;">
-      <h2>Welcome!</h2><p>Tasty snacks, chaat, and meals at affordable prices in Chennai.</p>
+      <h2>Welcome!</h2><p>Tasty snacks, chaat, and meals at affordable prices.</p>
       <button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
     </div>
   </section>
@@ -54,10 +55,13 @@
       <div id="statusResult" style="margin-top:15px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
     </div>
   </section>
+  <section id="adminPage" class="page">
+    <h2>👑 Active Orders & Status Update</h2><div id="adminOrders">Loading Orders...</div>
+  </section>
 </main>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDoc, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U", authDomain: "shree-chaat-corner.firebaseapp.com",
@@ -81,7 +85,7 @@
     items.forEach(i => {
       const qty = cart[i.id] || 0;
       html += `<div class="card">
-        <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}">
+        <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}" onerror="this.src='https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400';">
         <div style="margin-top:8px;"><b>${i.name}</b><br>₹${i.price}</div>
         <div style="margin-top:8px;">
           ${qty > 0 ? `<button class="btn" onclick="change(${i.id}, -1)">-</button> ${qty} <button class="btn" onclick="change(${i.id}, 1)">+</button>` : `<button class="btn" onclick="change(${i.id}, 1)">Add</button>`}
@@ -131,7 +135,7 @@
     items.forEach(i => {
       if(cart[i.id]) {
         total += i.price * cart[i.id];
-        summary += `\n- ${i.name} x ${cart[i.id]}`; // Separate line formatting
+        summary += `\n- ${i.name} x ${cart[i.id]}`;
       }
     });
     if(total === 0) return alert("Cart is empty!");
@@ -159,6 +163,30 @@
         resultDiv.textContent = "❌ Order ID not found.";
       }
     } catch (e) { resultDiv.textContent = "❌ Error fetching status."; }
+  };
+
+  // 1-Click Owner Panel logic
+  onSnapshot(collection(db, "orders"), (snapshot) => {
+    let html = "";
+    snapshot.forEach(docSnap => {
+      const o = docSnap.data();
+      html += `<div class="card" style="text-align:left;">
+        <b>Order ID:</b> ${docSnap.id}<br>
+        <b>Customer:</b> ${o.name} (${o.phone})<br>
+        <b>Status:</b> <span style="color:#c2410c;font-weight:bold;">${o.status}</span><br>
+        <button class="btn" style="background:#57534e;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Preparing')">Preparing</button>
+        <button class="btn" style="background:#16a34a;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Packed')">Packed</button>
+        <button class="btn" style="background:#2563eb;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Delivered')">Delivered</button>
+      </div>`;
+    });
+    document.getElementById("adminOrders").innerHTML = html || "No orders found.";
+  });
+
+  window.updateStatus = async (id, newStatus) => {
+    try {
+      await updateDoc(doc(db, "orders", id), { status: newStatus });
+      alert("Status updated to: " + newStatus);
+    } catch(e) { alert("Error: " + e.message); }
   };
 
   const urlParams = new URLSearchParams(window.location.search);
