@@ -11,7 +11,7 @@
   main{max-width:800px;margin:auto;padding:10px} .page{display:none} .page.active{display:block}
   .card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:12px;margin:10px 0}
   .menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  .card img{width:100%;height:100px;object-fit:cover;border-radius:8px;background:#ffedd5}
+  .card img{width:100%;height:120px;object-fit:cover;border-radius:8px;background:#ffedd5}
   .btn{border:0;border-radius:8px;padding:10px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px}
   input,textarea{width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:8px;margin:5px 0}
 </style>
@@ -22,7 +22,7 @@
   <button onclick="showPage('home')">🏠 Home</button>
   <button onclick="showPage('menuPage')">🍽️ Menu</button>
   <button onclick="showPage('cartPage')">🛒 Cart</button>
-  <button onclick="showPage('history')">📋 History</button>
+  <button onclick="showPage('trackPage')">🔍 Track</button>
 </nav>
 <main>
   <section id="home" class="page active">
@@ -46,13 +46,18 @@
       <button class="btn" style="width:100%;" onclick="placeOrder()">Order on WhatsApp</button>
     </div>
   </section>
-  <section id="history" class="page">
-    <h2>📋 Order History</h2><div id="historyList">No orders yet.</div>
+  <section id="trackPage" class="page">
+    <h2>🔍 Live Order Tracking</h2>
+    <div class="panel">
+      <input id="trackIdInput" placeholder="Enter Order ID to Track">
+      <button class="btn" style="width:100%;" onclick="trackOrderLive()">Track Live Status</button>
+      <div id="statusResult" style="margin-top:15px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
+    </div>
   </section>
 </main>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U", authDomain: "shree-chaat-corner.firebaseapp.com",
@@ -69,7 +74,6 @@
   window.showPage = (id) => {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById(id).classList.add("active");
-    if(id === 'history') renderHistory();
   };
 
   function renderMenu() {
@@ -78,8 +82,8 @@
       const qty = cart[i.id] || 0;
       html += `<div class="card">
         <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}">
-        <div><b>${i.name}</b><br>₹${i.price}</div>
-        <div>
+        <div style="margin-top:8px;"><b>${i.name}</b><br>₹${i.price}</div>
+        <div style="margin-top:8px;">
           ${qty > 0 ? `<button class="btn" onclick="change(${i.id}, -1)">-</button> ${qty} <button class="btn" onclick="change(${i.id}, 1)">+</button>` : `<button class="btn" onclick="change(${i.id}, 1)">Add</button>`}
         </div>
       </div>`;
@@ -113,7 +117,7 @@
         document.getElementById("customerAddress").value = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
         s.textContent = "✅ Location Added!";
       },
-      () => { s.textContent = "❌ GPS blocks on local files. Works automatically on secure HTTPS (like tiiny.host)!"; }
+      () => { s.textContent = "❌ GPS blocks on local files. Works automatically on secure HTTPS!"; }
     );
   };
 
@@ -127,32 +131,42 @@
     items.forEach(i => {
       if(cart[i.id]) {
         total += i.price * cart[i.id];
-        summary += `\n- ${i.name} x ${cart[i.id]}`;
+        summary += `\n- ${i.name} x ${cart[i.id]}`; // Separate line formatting
       }
     });
     if(total === 0) return alert("Cart is empty!");
 
     try {
-      const docRef = await addDoc(collection(db, "orders"), { name, phone, address: addr, items: cart, total, timestamp: new Date() });
-      const orderId = docRef.id.slice(-6).toUpperCase();
-      let history = JSON.parse(localStorage.getItem("orders") || "[]");
-      history.push({ id: orderId, name, items: summary, total, status: "Order Placed", date: new Date().toLocaleDateString() });
-      localStorage.setItem("orders", JSON.stringify(history));
+      const docRef = await addDoc(collection(db, "orders"), { name, phone, address: addr, items: cart, total, status: "Order Placed", timestamp: new Date() });
+      const orderId = docRef.id;
+      const shortId = orderId.slice(-6).toUpperCase();
 
-      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${orderId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track status using ID: ${orderId}_`;
-      window.open("https://wa.me/918428656328?text=" + encodeURIComponent(text));
+      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${shortId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track status: ${window.location.href.split('?')[0]}?id=${orderId}_`;
+      window.open(`https://wa.me/918428656328?text=${encodeURIComponent(text)}`);
     } catch (e) { alert("Error: " + e.message); }
   };
 
-  function renderHistory() {
-    let history = JSON.parse(localStorage.getItem("orders") || "[]");
-    let html = history.map(o => `
-      <div class="card" style="text-align:left;">
-        <b>Order ID: ${o.id}</b> (${o.date})<br>
-        <span style="font-size:13px;color:#666;">${o.items.replace(/\n/g, '<br>')}</span><br>
-        <b>Total: ₹${o.total}</b> | Status: <span style="color:#ea580c;font-weight:bold;">${o.status}</span>
-      </div>`).join("");
-    document.getElementById("historyList").innerHTML = html || "No orders yet.";
+  window.trackOrderLive = async () => {
+    let id = document.getElementById("trackIdInput").value.trim();
+    if(!id) return alert("Please enter Order ID!");
+    const resultDiv = document.getElementById("statusResult");
+    resultDiv.textContent = "🔍 Fetching status...";
+    try {
+      const docSnap = await getDoc(doc(db, "orders", id));
+      if (docSnap.exists()) {
+        resultDiv.textContent = `Live Status: ${docSnap.data().status}`;
+      } else {
+        resultDiv.textContent = "❌ Order ID not found.";
+      }
+    } catch (e) { resultDiv.textContent = "❌ Error fetching status."; }
+  };
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const autoId = urlParams.get('id');
+  if(autoId) {
+    showPage('trackPage');
+    document.getElementById("trackIdInput").value = autoId;
+    setTimeout(trackOrderLive, 1000);
   }
 </script>
 </body>
