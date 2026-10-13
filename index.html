@@ -5,14 +5,14 @@
 <title>Shree Chaat Corner</title>
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#fffaf5;color:#292524}
-  header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:10px}
+  header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:15px}
   nav{display:flex;gap:5px;overflow-x:auto;background:white;padding:8px;position:sticky;top:0;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
-  nav button{border:0;border-radius:20px;background:#ffedd5;padding:8px 12px;color:#9a3412;font-weight:bold;cursor:pointer}
+  nav button{border:0;border-radius:20px;background:#ffedd5;padding:8px 12px;color:#9a3412;font-weight:bold;cursor:pointer;font-size:12px}
   main{max-width:800px;margin:auto;padding:10px} .page{display:none} .page.active{display:block}
   .card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:12px;margin:10px 0}
   .menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-  .card img{width:100%;height:110px;object-fit:cover;border-radius:8px;background:#ffedd5}
-  .btn{border:0;border-radius:8px;padding:8px 12px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px}
+  .card img{width:100%;height:120px;object-fit:cover;border-radius:8px;background:#ffedd5}
+  .btn{border:0;border-radius:8px;padding:10px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px}
   input,textarea{width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:8px;margin:5px 0}
 </style>
 </head>
@@ -22,35 +22,39 @@
   <button onclick="showPage('home')">🏠 Home</button>
   <button onclick="showPage('menuPage')">🍽️ Menu</button>
   <button onclick="showPage('cartPage')">🛒 Cart</button>
-  <button onclick="showPage('trackPage')">🔍 Track</button>
-  <button onclick="openAdminSecure()" style="background:#78716c;color:white;">👑 Owner</button>
+  <button onclick="showPage('history')">📋 History & Track</button>
+  <button onclick="openAdmin()" style="background:#78716c;color:white;">👑 Owner</button>
 </nav>
 <main>
   <section id="home" class="page active">
     <div class="card" style="text-align:center;background:#ffedd5;">
-      <h2>Welcome!</h2><p>Tasty chaat and meals in Chennai.</p>
+      <h2>Welcome!</h2><p>Tasty snacks, chaat, and meals at affordable prices in Chennai.</p>
       <button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
     </div>
   </section>
-  <section id="menuPage" class="page"><h2>🍽️ Menu</h2><div id="menu" class="menu"></div></section>
+  <section id="menuPage" class="page">
+    <h2>🍽️ Our Full Menu</h2><div id="menu" class="menu"></div>
+  </section>
   <section id="cartPage" class="page">
-    <h2>🛒 Checkout</h2>
+    <h2>🛒 Checkout & Location</h2>
     <div class="panel">
       <div id="cart">Cart is empty.</div><h4>Total: ₹<span id="grand">0</span></h4>
-      <input id="customer" placeholder="Your Name"><input id="phone" placeholder="Mobile Number">
+      <input id="customer" placeholder="Your Name">
+      <input id="phone" placeholder="Mobile Number">
       <textarea id="customerAddress" placeholder="Address"></textarea>
       <button class="btn" style="background:#16803c; width:100%;" onclick="getLocation()">📍 Use Current Location</button>
       <div id="locStatus" style="font-size:12px;color:#c2410c;"></div>
       <button class="btn" style="width:100%;" onclick="placeOrder()">Order on WhatsApp</button>
     </div>
   </section>
-  <section id="trackPage" class="page">
+  <section id="history" class="page">
     <h2>🔍 Live Order Tracking</h2>
     <div class="panel">
       <input id="trackIdInput" placeholder="Enter Order ID to Track">
       <button class="btn" style="width:100%;" onclick="trackOrderLive()">Track Live Status</button>
-      <div id="statusResult" style="margin-top:15px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
+      <div id="statusResult" style="margin-top:10px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
     </div>
+    <h2>📋 My Order History</h2><div id="historyList">No orders yet.</div>
   </section>
   <section id="adminPage" class="page">
     <h2>👑 Owner Panel (Secure)</h2><div id="adminOrders">Loading Orders...</div>
@@ -65,10 +69,9 @@
     projectId: "shree-chaat-corner", storageBucket: "shree-chaat-corner.appspot.com",
     messagingSenderId: "197160794283", appId: "1:197160794283:web:48971b82bb1b42fdaf1fee"
   };
-  const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
   const items=[
-    {id:1,name:"Samosa",price:15,s:"samosa"},{id:2,name:"Kachori",price:20,s:"kachori"},{id:3,name:"Samosa Chaat",price:50,s:"samosa"},{id:4,name:"Kachori Chaat",price:50,s:"kachori"},{id:5,name:"Sundal Chaat",price:40,s:"chickpea"},{id:6,name:"Pani Puri",price:30,s:"pani puri"},{id:7,name:"Dahi Puri",price:35,s:"dahi puri"},{id:8,name:"Cheese Puri",price:65,s:"puri"},{id:9,name:"Sev Puri",price:45,s:"sev puri"},{id:10,name:"Veg Bread Sandwich",price:40,s:"sandwich"},{id:11,name:"Veg Bread Cheese",price:50,s:"sandwich cheese"},{id:12,name:"Murukku Sandwich",price:60,s:"murukku"},{id:13,name:"Murukku Cheese",price:70,s:"murukku cheese"},{id:14,name:"Khakhra Sandwich",price:70,s:"khakhra"},{id:15,name:"Khakhra Cheese",price:90,s:"khakhra cheese"},{id:16,name:"Roti Sabji",price:30,s:"roti"},{id:17,name:"Triangle Paratha",price:40,s:"paratha"},{id:18,name:"Methi Paratha",price:50,s:"paratha methi"},{id:19,name:"Aaloo Paratha",price:60,s:"paratha aloo"},{id:20,name:"Special Sabji",price:50,s:"curry"},{id:21,name:"Water Bottle 10",price:10,s:"water bottle"},{id:22,name:"Water Bottle 20",price:20,s:"water bottle"},{id:23,name:"Cool Drink 10",price:10,s:"cold drink"},{id:24,name:"Cool Drink 20",price:20,s:"cold drink"}
+    {id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"sandwich"},{id:11,n:"Veg Bread Cheese",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku"},{id:13,n:"Murukku Cheese",p:70,s:"cheese"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra"},{id:15,n:"Khakhra Cheese",p:90,s:"cheese"},{id:16,n:"Roti Sabji",p:30,s:"roti"},{id:17,n:"Triangle Paratha",p:40,s:"paratha"},{id:18,n:"Methi Paratha",p:50,s:"methi"},{id:19,n:"Aaloo Paratha",p:60,s:"aloo"},{id:20,n:"Special Sabji",p:50,s:"curry"},{id:21,n:"Water Bottle 10",p:10,s:"water"},{id:22,n:"Water Bottle 20",p:20,s:"water"},{id:23,n:"Cool Drink 10",p:10,s:"drink"},{id:24,n:"Cool Drink 20",p:20,s:"drink"}
   ];
   const cart = {};
 
@@ -83,7 +86,7 @@
       const qty = cart[i.id] || 0;
       html += `<div class="card">
         <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}" onerror="this.src='https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=400';">
-        <div style="margin-top:8px;"><b>${i.name}</b><br>₹${i.price}</div>
+        <div style="margin-top:8px;"><b>${i.n}</b><br>₹${i.p}</div>
         <div style="margin-top:8px;">
           ${qty > 0 ? `<button class="btn" onclick="change(${i.id}, -1)">-</button> ${qty} <button class="btn" onclick="change(${i.id}, 1)">+</button>` : `<button class="btn" onclick="change(${i.id}, 1)">Add</button>`}
         </div>
@@ -103,12 +106,21 @@
     let html = ""; let total = 0;
     items.forEach(i => {
       if(cart[i.id]) {
-        total += i.price * cart[i.id];
-        html += `<div>${i.name} x ${cart[i.id]} = ₹${i.price * cart[i.id]}</div>`;
+        total += i.p * cart[i.id];
+        html += `<div>${i.n} x ${cart[i.id]} = ₹${i.p * cart[i.id]}</div>`;
       }
     });
     document.getElementById("cart").innerHTML = html || "Cart is empty.";
     document.getElementById("grand").textContent = total;
+  }
+
+  // Live Crash-proof Firebase Initialization
+  let db;
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+  } catch(e) {
+    console.error("Firebase Load Fail:", e);
   }
 
   window.getLocation = () => {
@@ -131,25 +143,63 @@
     let total = 0; let summary = "";
     items.forEach(i => {
       if(cart[i.id]) {
-        total += i.price * cart[i.id];
-        summary += `\n- ${i.name} x ${cart[i.id]}`;
+        total += i.p * cart[i.id];
+        summary += `\n- ${i.n} x ${cart[i.id]}`;
       }
     });
     if(total === 0) return alert("Cart is empty!");
 
     try {
-      const docRef = await addDoc(collection(db, "orders"), { name, phone, address: addr, items: cart, total, status: "Order Placed", timestamp: new Date() });
-      const orderId = docRef.id;
+      let orderId = "OFFLINE";
+      if(db) {
+        const docRef = await addDoc(collection(db, "orders"), { name, phone, address: addr, items: cart, total, status: "Order Placed", timestamp: new Date() });
+        orderId = docRef.id;
+      }
       const shortId = orderId.slice(-6).toUpperCase();
       const base = window.location.href.split('?')[0];
 
-      // Secret Admin Link only for WhatsApp Owner
-      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${shortId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track link: ${base}?id=${orderId}_\n\n*Admin Status Update (Only for Owner):* ${base}?adminId=${orderId}`;
+      let history = JSON.parse(localStorage.getItem("orders") || "[]");
+      history.push({ id: orderId, name, items: summary, total, status: "Order Placed", date: new Date().toLocaleDateString() });
+      localStorage.setItem("orders", JSON.stringify(history));
+
+      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${shortId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track status: ${base}?id=${orderId}_\n\n*Admin Status:* ${base}?adminId=${orderId}`;
       window.open(`https://wa.me/918428656328?text=${encodeURIComponent(text)}`);
     } catch (e) { alert("Error: " + e.message); }
   };
 
+  window.openAdmin = () => {
+    if(prompt("Enter PIN:") === "8428") showPage('adminPage');
+    else alert("❌ Invalid PIN!");
+  };
+
+  if(db) {
+    onSnapshot(collection(db, "orders"), (snapshot) => {
+      let html = "";
+      snapshot.forEach(docSnap => {
+        const o = docSnap.data();
+        html += `<div class="card" style="text-align:left;">
+          <b>Order ID:</b> ${docSnap.id}<br>
+          <b>Customer:</b> ${o.name} (${o.phone})<br>
+          <b>Status:</b> <span style="color:#c2410c;font-weight:bold;">${o.status}</span><br>
+          <button class="btn" style="background:#57534e;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Preparing')">Preparing</button>
+          <button class="btn" style="background:#16a34a;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Packed')">Packed</button>
+          <button class="btn" style="background:#2563eb;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Delivered')">Delivered</button>
+        </div>`;
+      });
+      document.getElementById("adminOrders").innerHTML = html || "No orders found.";
+    }, (error) => { console.log("Orders snap block:", error); });
+  }
+
+  window.updateStatus = async (id, newStatus) => {
+    if(!db) return alert("Database not connected.");
+    try {
+      await updateDoc(doc(db, "orders", id), { status: newStatus });
+      alert("Status updated!");
+    } catch(e) { alert("Error: " + e.message); }
+  };
+
   window.trackOrderLive = async () => {
+    if(!db) return alert("Database not connected.");
     let id = document.getElementById("trackIdInput").value.trim();
     if(!id) return alert("Please enter Order ID!");
     const resultDiv = document.getElementById("statusResult");
@@ -164,52 +214,35 @@
     } catch (e) { resultDiv.textContent = "❌ Error fetching status."; }
   };
 
-  // Secure Owner PIN configuration (Default: 8428)
-  window.openAdminSecure = () => {
-    const pin = prompt("Enter 4-Digit Owner PIN to access:");
-    if(pin === "8428") {
-      showPage('adminPage');
-    } else {
-      alert("❌ Invalid PIN Access Denied!");
-    }
+  function renderHistory() {
+    let history = JSON.parse(localStorage.getItem("orders") || "[]");
+    let html = history.map(o => `
+      <div class="card" style="text-align:left;">
+        <b>Order ID: ${o.id.slice(-6).toUpperCase()}</b> (${o.date})<br>
+        <span style="font-size:13px;color:#666;">${o.items.replace(/\n/g, '<br>')}</span><br>
+        <b>Total: ₹${o.total}</b> | Status: <span style="color:#ea580c;font-weight:bold;">${o.status}</span><br>
+        <button class="btn" style="padding:4px 8px;font-size:12px;" onclick="trackHistoryOrder('${o.id}')">🔍 Track Live</button>
+      </div>`).join("");
+    document.getElementById("historyList").innerHTML = html || "No orders yet.";
+  }
+
+  window.trackHistoryOrder = (id) => {
+    document.getElementById("trackIdInput").value = id;
+    showPage('history');
+    trackOrderLive();
   };
 
-  onSnapshot(collection(db, "orders"), (snapshot) => {
-    let html = "";
-    snapshot.forEach(docSnap => {
-      const o = docSnap.data();
-      html += `<div class="card" style="text-align:left;">
-        <b>Order ID:</b> ${docSnap.id}<br>
-        <b>Customer:</b> ${o.name} (${o.phone})<br>
-        <b>Status:</b> <span style="color:#c2410c;font-weight:bold;">${o.status}</span><br>
-        <button class="btn" style="background:#57534e;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Preparing')">Preparing</button>
-        <button class="btn" style="background:#16a34a;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Packed')">Packed</button>
-        <button class="btn" style="background:#2563eb;padding:4px 8px;font-size:12px;" onclick="updateStatus('${docSnap.id}', 'Delivered')">Delivered</button>
-      </div>`;
-    });
-    document.getElementById("adminOrders").innerHTML = html || "No orders found.";
-  });
-
-  window.updateStatus = async (id, newStatus) => {
-    try {
-      await updateDoc(doc(db, "orders", id), { status: newStatus });
-      alert("Status updated to: " + newStatus);
-    } catch(e) { alert("Error: " + e.message); }
-  };
-
-  // Auto-check URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const autoId = urlParams.get('id');
   const adminId = urlParams.get('adminId');
 
   if(autoId) {
-    showPage('trackPage');
+    showPage('history');
     document.getElementById("trackIdInput").value = autoId;
-    setTimeout(trackOrderLive, 1000);
+    if(db) setTimeout(trackOrderLive, 1000);
   } else if(adminId) {
-    // Directly bypasses PIN since URL contains secret token
     showPage('adminPage');
-    alert("Owner mode activated from WhatsApp! Please update status below.");
+    alert("Owner mode activated!");
   }
 </script>
 </body>
