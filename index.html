@@ -1,195 +1,506 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ea580c">
 <title>Shree Chaat Corner</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#fffaf5;color:#292524}
-header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:15px}
-header h1{margin:5px}header p{margin:6px}
-nav{display:flex;gap:5px;overflow-x:auto;background:white;padding:8px;position:sticky;top:0;z-index:10;box-shadow:0 2px 6px #0001}
-nav button{white-space:nowrap;border:0;border-radius:20px;background:#ffedd5;padding:9px 12px;color:#9a3412;font-weight:bold;cursor:pointer;font-size:12px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#fffaf5;color:#292524}
+header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:18px 10px}
+header h1{margin:5px}
+header p{margin:7px;font-size:13px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:white;position:sticky;top:0;z-index:10;box-shadow:0 2px 6px #0001}
+nav button{flex:1 0 auto;border:0;border-radius:20px;background:#ffedd5;padding:10px;color:#9a3412;font-weight:bold;cursor:pointer}
 nav button.active{background:#ea580c;color:white}
-main{max-width:900px;margin:auto;padding:10px}.page{display:none}.page.active{display:block}
-.card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:12px;margin:10px 0}
+main{max-width:900px;margin:auto;padding:12px}
+.page{display:none}.page.active{display:block}
+.card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:14px;margin:10px 0}
 .menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.food-photo{display:block;width:100%;height:145px;object-fit:cover;object-position:center;border-radius:8px;background:#ffedd5;opacity:1;transition:none}.food-fallback{height:145px;border-radius:8px;background:#fff1df;display:flex;align-items:center;justify-content:center;font-size:48px}
-.btn{border:0;border-radius:8px;padding:10px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px}
-input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:8px;margin:5px 0;font:inherit}
-.small{font-size:12px;color:#78716c}.price{font-weight:bold;color:#c2410c}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(min-width:620px){.menu{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:360px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-.status{display:inline-block;background:#ffedd5;color:#9a3412;border-radius:20px;padding:4px 9px;font-weight:bold;font-size:12px}
+.item-name{font-weight:bold;font-size:16px}
+.price{color:#c2410c;font-weight:bold;margin-top:8px}
+.btn{border:0;border-radius:8px;padding:11px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px 2px}
+.btn.green{background:#16803c}
+.btn.gray{background:#57534e}
+input,textarea,select{width:100%;padding:12px;border:1px solid #d6d3d1;border-radius:8px;margin:6px 0 12px;font:inherit}
+label{font-weight:bold;font-size:14px}
+.small{font-size:12px;color:#78716c;line-height:1.5}
+.status{display:inline-block;background:#ffedd5;color:#9a3412;border-radius:20px;padding:6px 10px;font-weight:bold;font-size:13px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+a{color:#c2410c;overflow-wrap:anywhere}
+@media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
 </style>
 </head>
 <body>
-<header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color:white">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
+
+<header>
+<h1>🥗 Shree Chaat Corner</h1>
+<p>Good Food • Good Mood ❤️</p>
+<p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar,<br>Tirvottiyur, Chennai 600019</p>
+</header>
+
 <nav>
-  <button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
-  <button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
-  <button data-page="cartPage" onclick="showPage('cartPage',this)">🛒 Cart</button>
-  <button data-page="history" onclick="showPage('history',this)">📋 Order History</button>
-  <button data-page="history" onclick="showPage('history',this);document.getElementById('trackIdInput').focus()">🔎 Track Status</button>
-  <button data-page="aboutPage" onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
-  <button data-page="adminPage" onclick="openAdmin(this)" style="background:#78716c;color:white">🔐 Owner Admin</button>
+<button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
+<button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
+<button data-page="cartPage" onclick="showPage('cartPage',this)">🛒 Cart</button>
+<button data-page="history" onclick="showPage('history',this)">📋 History</button>
+<button data-page="history" onclick="openTracking(this)">🔎 Track Status</button>
+<button data-page="aboutPage" onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
+<button data-page="adminPage" onclick="showPage('adminPage',this)">🔐 Owner Admin</button>
 </nav>
+
 <main>
 <section id="home" class="page active">
-<div class="card" style="text-align:center;background:#ffedd5"><h2>Welcome!</h2><p>Tasty snacks, chaat, sandwiches and meals at affordable prices in Chennai.</p><button class="btn" onclick="showPage('menuPage')">Explore Menu</button></div>
-<div class="panel"><b>Order with ease</b><p>Choose your favourite items, review your cart and send your order through WhatsApp.</p></div>
+<div class="card" style="text-align:center;background:#ffedd5">
+<h2>Welcome to Shree Chaat Corner!</h2>
+<p>Fresh chaat, snacks, sandwiches and meals at affordable prices.</p>
+<button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
+</div>
+<div class="panel">
+<h3>📦 Track Your Order</h3>
+<p>Enter your Order ID to check your latest order status.</p>
+<button class="btn" onclick="openTracking()">Track My Order</button>
+</div>
+<div class="panel">
+<h3>🛍️ Easy Ordering</h3>
+<p>Select items, add your details and place your order through WhatsApp.</p>
+</div>
 </section>
-<section id="menuPage" class="page"><h2>🍽️ Our Full Menu</h2><div id="menu" class="menu"></div></section>
+
+<section id="menuPage" class="page">
+<h2>🍽️ Our Menu</h2>
+<p class="small">Select your favourite items. No food photographs are used in this app.</p>
+<div id="menu" class="menu"></div>
+</section>
+
 <section id="cartPage" class="page">
-<h2>🛒 Checkout & Location</h2><div class="panel">
-<div id="cart">Cart is empty.</div><h3>Items total: ₹<span id="grand">0</span></h3>
-<label for="customer">Your Name *</label><input id="customer" placeholder="Your name" autocomplete="name">
-<label for="phone">Mobile Number *</label><input id="phone" inputmode="tel" placeholder="10-digit mobile number">
-<label for="orderType">Order Type</label><select id="orderType" onchange="toggleDelivery()"><option value="Takeaway">Takeaway</option><option value="Home Delivery">Home Delivery</option></select>
-<div id="deliveryFields" style="display:none"><label for="customerAddress">Delivery Address *</label><textarea id="customerAddress" placeholder="House number, street, area"></textarea>
-<button class="btn" style="background:#16803c;width:100%" onclick="getLocation()">📍 Use Current Location</button><div id="locStatus" class="small"></div>
-<label for="distance">Distance from shop (km) *</label><input id="distance" type="number" min="0" step="0.1" value="1" oninput="renderCart()"><p class="small">Delivery charge: ₹10 per km. Enter the distance manually; automatic route calculation is not included.</p></div>
-<label for="notes">Order notes (optional)</label><textarea id="notes" placeholder="Any special instructions"></textarea>
-<div>Delivery charge: ₹<span id="deliveryCharge">0</span></div><div>Packing charge: ₹<span id="packingCharge">0</span></div><h3>Total: ₹<span id="finalTotal">0</span></h3>
-<button class="btn" style="background:#16803c;width:100%" onclick="placeOrder()">Order on WhatsApp</button>
-<p class="small">Review the details in WhatsApp and press Send to confirm your order.</p>
-</div></section>
-<section id="history" class="page"><h2>🔍 Track Your Order</h2><div class="panel"><label for="trackIdInput">Order ID</label><input id="trackIdInput" placeholder="Enter Order ID"><button class="btn" style="width:100%" onclick="trackOrderLive()">Track Status</button><div id="statusResult" style="margin-top:10px;font-weight:bold;color:#ea580c"></div></div><h2>📋 My Order History</h2><div id="historyList">No orders yet.</div></section>
-<section id="adminPage" class="page"><h2>🔐 Update Order Status</h2><div class="panel"><p class="small">This basic page is not protected by staff login. Do not share the page publicly. Add Firebase Authentication and security rules before using it for real customer orders.</p><label for="adminOrderId">Order ID</label><input id="adminOrderId" placeholder="Paste full order ID"><label for="newStatus">New status</label><select id="newStatus"><option>Order Placed</option><option>Confirmed</option><option>Preparing</option><option>Ready for Pickup</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option></select><button class="btn" onclick="updateOrderStatus()">Update Status</button><div id="adminResult"></div></div></section>
-<section id="aboutPage" class="page"><div class="panel"><h2>About Us</h2><p>Shree Chaat Corner serves chaat, snacks, sandwiches and meal options with care and at affordable prices.</p><b>Address</b><p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></div></section>
+<h2>🛒 Checkout</h2>
+<div class="panel">
+<div id="cart">Cart is empty.</div>
+<h3>Items total: ₹<span id="grand">0</span></h3>
+
+<label for="customer">Your Name *</label>
+<input id="customer" placeholder="Enter your name" autocomplete="name">
+
+<label for="phone">Mobile Number *</label>
+<input id="phone" type="tel" inputmode="tel" placeholder="10-digit mobile number">
+
+<label for="orderType">Order Type</label>
+<select id="orderType" onchange="toggleDelivery()">
+<option value="Takeaway">Takeaway</option>
+<option value="Home Delivery">Home Delivery</option>
+</select>
+
+<div id="deliveryFields" style="display:none">
+<label for="customerAddress">Delivery Address *</label>
+<textarea id="customerAddress" placeholder="House number, street, area"></textarea>
+<button class="btn green" onclick="getLocation()">📍 Use Current Location</button>
+<div id="locStatus" class="small"></div>
+<label for="distance">Distance from shop (km) *</label>
+<input id="distance" type="number" min="0" step="0.1" value="1" oninput="renderCart()">
+<p class="small">Delivery charge: ₹10 per km. Enter the distance manually.</p>
+</div>
+
+<label for="notes">Order Notes (optional)</label>
+<textarea id="notes" placeholder="Special instructions"></textarea>
+
+<p>Delivery: ₹<span id="deliveryCharge">0</span></p>
+<p>Packing: ₹<span id="packingCharge">0</span></p>
+<h3>Total: ₹<span id="finalTotal">0</span></h3>
+
+<button class="btn green" style="width:100%" onclick="placeOrder()">Place Order on WhatsApp</button>
+<p class="small">WhatsApp will open with your order details. Press Send there to send the order to the shop.</p>
+</div>
+</section>
+
+<section id="history" class="page">
+<h2>🔎 Track Your Order</h2>
+<div class="panel">
+<label for="trackIdInput">Order ID</label>
+<input id="trackIdInput" placeholder="Enter your complete Order ID">
+<button class="btn" style="width:100%" onclick="trackOrderLive()">Check Order Status</button>
+<div id="statusResult" style="margin-top:12px"></div>
+</div>
+<h2>📋 Order History</h2>
+<div id="historyList">No orders on this device yet.</div>
+</section>
+
+<section id="adminPage" class="page">
+<h2>🔐 Owner Admin</h2>
+<div class="panel">
+<p class="small">Owner login requires Firebase Email/Password Authentication. Only the authorized owner account should be allowed to update order status.</p>
+<div id="loginPanel">
+<label for="adminEmail">Owner Email</label>
+<input id="adminEmail" type="email" autocomplete="username" placeholder="Owner email">
+<label for="adminPassword">Owner Password</label>
+<input id="adminPassword" type="password" autocomplete="current-password" placeholder="Firebase account password">
+<button class="btn" style="width:100%" onclick="ownerLogin()">Owner Login</button>
+</div>
+<div id="adminPanel" style="display:none">
+<p>Logged in as: <span id="ownerEmail"></span></p>
+<button class="btn gray" onclick="ownerLogout()">Logout</button>
+<hr>
+<label for="adminOrderId">Order ID</label>
+<input id="adminOrderId" placeholder="Enter complete Order ID">
+<label for="newStatus">New Status</label>
+<select id="newStatus">
+<option>Order Placed</option>
+<option>Confirmed</option>
+<option>Preparing</option>
+<option>Ready for Pickup</option>
+<option>Out for Delivery</option>
+<option>Delivered</option>
+<option>Cancelled</option>
+</select>
+<button class="btn green" style="width:100%" onclick="updateOrderStatus()">Update Customer Status</button>
+<div id="adminResult"></div>
+</div>
+</div>
+</section>
+
+<section id="aboutPage" class="page">
+<div class="panel">
+<h2>About Us</h2>
+<p>Shree Chaat Corner serves chaat, snacks, sandwiches and meal options with care and at affordable prices.</p>
+<h3>Our Address</h3>
+<p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p>
+<p>Contact: <a href="https://wa.me/918428656328">WhatsApp 8428656328</a></p>
+</div>
+</section>
 </main>
-<footer style="text-align:center;padding:20px;font-size:12px;color:#78716c">Shree Chaat Corner • Chennai</footer>
+
+<footer style="text-align:center;padding:20px;font-size:12px;color:#78716c">
+Shree Chaat Corner • Chennai
+</footer>
+
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-/* IMPORTANT: Replace YOUR_API_KEY and YOUR_APP_ID with your Firebase Web App config values. */
-const firebaseConfig = {
-  apiKey: "AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U",
-  authDomain: "shree-chaat-corner.firebaseapp.com",
-  projectId: "shree-chaat-corner",
-  storageBucket: "shree-chaat-corner.appspot.com",
-  messagingSenderId: "197160794283",
-  appId: "1:197160794283:web:48971b82bb1b42fdaf1fee"
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+ getFirestore,collection,doc,getDoc,setDoc,updateDoc,serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+ getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U",
+ authDomain:"shree-chaat-corner.firebaseapp.com",
+ projectId:"shree-chaat-corner",
+ storageBucket:"shree-chaat-corner.appspot.com",
+ messagingSenderId:"197160794283",
+ appId:"1:197160794283:web:48971b82bb1b42fdaf1fee"
 };
-/* Shree Chaat Corner WhatsApp: India country code + mobile number */
-const SHOP_WHATSAPP = "918428656328";
-/* Basic owner PIN lock. Change this PIN before publishing. Note: a PIN stored in public HTML is not strong security; use Firebase Authentication + Firestore rules for true owner-only access. */
-const OWNER_PIN = "2580";
-const PACKING_CHARGE = 0; // Set your packing fee here if needed.
+
+const SHOP_WHATSAPP="918428656328";
+const PACKING_CHARGE=0;
+const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";
+const ADMIN_URL=TRACK_URL+"?admin=1";
+
 const items=[
-{id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa chaat"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal chaat"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"cheese puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"vegetable sandwich"},{id:11,n:"Veg Bread Cheese Sandwich",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku snack"},{id:13,n:"Murukku Cheese Sandwich",p:70,s:"cheese sandwich"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra snack"},{id:15,n:"Khakhra Cheese Sandwich",p:90,s:"cheese sandwich"},{id:16,n:"Roti Sabji",p:30,s:"roti curry"},{id:17,n:"Triangle Paratha Sabji",p:40,s:"paratha curry"},{id:18,n:"Methi Paratha Sabji",p:50,s:"methi paratha"},{id:19,n:"Aaloo Paratha Sabji",p:60,s:"aloo paratha"},{id:20,n:"Special Sabji",p:50,s:"paneer curry"},{id:21,n:"Water Bottle ₹10",p:10,s:"water bottle"},{id:22,n:"Water Bottle ₹20",p:20,s:"water bottle"},{id:23,n:"Cool Drink ₹10",p:10,s:"soft drink bottle"},{id:24,n:"Cool Drink ₹20",p:20,s:"soft drink bottle"}];
-const cart={}; let db=null;
-const firebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.appId !== "YOUR_APP_ID";
-try { if(firebaseConfigured) db=getFirestore(initializeApp(firebaseConfig)); } catch(err){ console.error("Firebase initialization error:",err); }
+{id:1,n:"Samosa",p:15},
+{id:2,n:"Kachori",p:20},
+{id:3,n:"Samosa Chaat",p:50},
+{id:4,n:"Kachori Chaat",p:50},
+{id:5,n:"Sundal Chaat",p:40},
+{id:6,n:"Pani Puri",p:25},
+{id:7,n:"Dahi Puri",p:30},
+{id:8,n:"Sev Puri",p:40},
+{id:9,n:"Cheese Puri",p:60},
+{id:10,n:"Plain Sandwich",p:40},
+{id:11,n:"Veg Cheese Loaded Sandwich",p:50},
+{id:12,n:"Murukku Sandwich",p:60},
+{id:13,n:"Murukku Cheese Loaded Sandwich",p:70},
+{id:14,n:"Roti / Chappathi Set",p:30},
+{id:15,n:"Triangle Paratha Set",p:40},
+{id:16,n:"Methi Paratha Set",p:50},
+{id:17,n:"Special Sabji Parcel",p:50}
+];
+
+let db=null,auth=null;
+const cart={};
 const $=id=>document.getElementById(id);
-function money(n){return Math.round(Number(n)||0).toString()}
-window.showPage = (id, btn) => {
-  document.querySelectorAll(".page").forEach(p => {
-    p.classList.remove("active");
-  });
-  const page = document.getElementById(id);
-  if (page) page.classList.add("active");
+const money=n=>Math.round(Number(n)||0).toString();
 
-  document.querySelectorAll("nav button").forEach(b => {
-    b.classList.remove("active");
-  });
-  if (btn) btn.classList.add("active");
+try{
+ const app=initializeApp(firebaseConfig);
+ db=getFirestore(app);
+ auth=getAuth(app);
+}catch(e){
+ console.error(e);
+ alert("Firebase could not initialize. Check your Firebase web configuration.");
+}
 
-  if (id === "history") renderHistory();
-}; document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- const page=$(id); if(page)page.classList.add("active");
+window.showPage=(id,btn)=>{
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ if($(id))$(id).classList.add("active");
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
  if(id==="history")renderHistory();
+ if(id==="adminPage")updateAdminUI(auth?.currentUser||null);
 };
-window.openAdmin = (btn) => {
-  const entered = prompt("Owner access only\nEnter your 4-digit PIN:");
-  if (entered === null) return;
-  if (entered === OWNER_PIN) {
-    showPage("adminPage", btn);
-  } else {
-    alert("Wrong PIN. Owner page access denied.");
-  }
+
+window.openTracking=(btn)=>{
+ showPage("history",btn);
+ const params=new URLSearchParams(location.search);
+ const orderId=params.get("track");
+ if(orderId)$("trackIdInput").value=orderId;
+ if(orderId)trackOrderLive();
 };
-const FOOD_PHOTOS={ "samosa":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80", "kachori":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
-  "samosa chaat":"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80",
-  "sundal chaat":"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
-  "pani puri":"https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=600&q=80",
-  "dahi puri":"https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80",
-  "cheese puri":"https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80",
-  "vegetable sandwich":"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80",
-  "cheese sandwich":"https://images.unsplash.com/photo-1539252554453-80ab65ce3586?auto=format&fit=crop&w=600&q=80",
-  "murukku snack":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
-  "khakhra snack":"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
-  "roti curry":"https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80",
-  "paratha curry":"https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=600&q=80",
-  "methi paratha":"https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=600&q=80",
-  "aloo paratha":"https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=600&q=80",
-  "paneer curry":"https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80",
-  "water bottle":"https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
-  "soft drink bottle":"https://images.unsplash.com/photo-1581636625402-29b2a704ef13?auto=format&fit=crop&w=600&q=80"
+
+const qtyButtons=i=>{
+ const q=cart[i.id]||0;
+ return q
+ ? `<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${q} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`
+ : `<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`;
 };
+
 function renderMenu(){
- $("menu").innerHTML=items.map(i=>{const qty=cart[i.id]||0;const photo=FOOD_PHOTOS[i.s]||FOOD_PHOTOS["samosa"];return `<div class="card"><img class="food-photo" loading="lazy" decoding="async" src="${photo}" alt="${i.n}" onerror="this.onerror=null;this.style.display='none';this.insertAdjacentHTML('afterend','<div class=\"food-fallback\" role=\"img\" aria-label=\"Food image unavailable\">🍽️</div>')"><div style="margin-top:8px"><b>${i.n}</b><br><span class="price">₹${i.p}</span></div><div style="margin-top:8px">${qty>0?`<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${qty} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`:`<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`}</div></div>`}).join("");
+ $("menu").innerHTML=items.map(i=>`
+ <div class="card">
+  <div style="font-size:28px">🍽️</div>
+  <div class="item-name">${i.n}</div>
+  <div class="price">₹${i.p}</div>
+  <div>${qtyButtons(i)}</div>
+ </div>`).join("");
 }
+
 function calc(){
- const subtotal=items.reduce((sum,i)=>sum+i.p*(cart[i.id]||0),0);
- const delivery=$("orderType").value==="Home Delivery"?Math.max(0,Number($("distance").value)||0)*10:0;
+ const subtotal=items.reduce((s,i)=>s+i.p*(cart[i.id]||0),0);
+ const delivery=$("orderType").value==="Home Delivery"
+  ? Math.max(0,Number($("distance").value)||0)*10 : 0;
  return {subtotal,delivery,packing:PACKING_CHARGE,total:subtotal+delivery+PACKING_CHARGE};
 }
+
 function renderCart(){
- const chosen=items.filter(i=>cart[i.id]>0);const c=calc();
- $("cart").innerHTML=chosen.length?chosen.map(i=>`<div>${i.n} × ${cart[i.id]} = ₹${i.p*cart[i.id]}</div>`).join(""):"Cart is empty.";
- $("grand").textContent=money(c.subtotal);$("deliveryCharge").textContent=money(c.delivery);$("packingCharge").textContent=money(c.packing);$("finalTotal").textContent=money(c.total);
+ const chosen=items.filter(i=>cart[i.id]>0),c=calc();
+ $("cart").innerHTML=chosen.length
+ ? chosen.map(i=>`<p>${i.n} × ${cart[i.id]} = ₹${i.p*cart[i.id]}</p>`).join("")
+ : "Cart is empty.";
+ $("grand").textContent=money(c.subtotal);
+ $("deliveryCharge").textContent=money(c.delivery);
+ $("packingCharge").textContent=money(c.packing);
+ $("finalTotal").textContent=money(c.total);
 }
-window.changeQty=(id,delta)=>{cart[id]=Math.max(0,(cart[id]||0)+delta);if(!cart[id])delete cart[id];renderMenu();renderCart();};
-window.toggleDelivery=()=>{$("deliveryFields").style.display=$("orderType").value==="Home Delivery"?"block":"none";renderCart();};
+
+window.changeQty=(id,delta)=>{
+ cart[id]=Math.max(0,(cart[id]||0)+delta);
+ if(!cart[id])delete cart[id];
+ renderMenu();renderCart();
+};
+
+window.toggleDelivery=()=>{
+ $("deliveryFields").style.display=$("orderType").value==="Home Delivery"?"block":"none";
+ renderCart();
+};
+
 window.getLocation=()=>{
  const status=$("locStatus");
- if(!navigator.geolocation){status.textContent="Location is not supported by this browser.";return}
- status.textContent="📍 Finding your location…";
- navigator.geolocation.getCurrentPosition(pos=>{const lat=pos.coords.latitude,lon=pos.coords.longitude;$("customerAddress").value=`https://maps.google.com/?q=${lat},${lon}`;status.textContent="✅ Location link added. Please add house/street details too.";},err=>{status.textContent="Could not get location. Allow location permission and use the HTTPS website.";},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+ if(!navigator.geolocation){status.textContent="Location is not supported.";return;}
+ status.textContent="Finding location…";
+ navigator.geolocation.getCurrentPosition(pos=>{
+  const {latitude,longitude}=pos.coords;
+  $("customerAddress").value=`https://maps.google.com/?q=${latitude},${longitude}`;
+  status.textContent="Location added. Please also enter your house and street details.";
+ },()=>{
+  status.textContent="Location unavailable. Allow location permission and try again.";
+ },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
 };
-function getLocalOrders(){try{return JSON.parse(localStorage.getItem("scc_orders")||"[]")}catch(e){return []}}
-function saveLocalOrder(order){const arr=getLocalOrders();arr.unshift(order);localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)))}
-function renderHistory(){
- const arr=getLocalOrders();
- $("historyList").innerHTML=arr.length?arr.map(o=>`<div class="card"><b>Order ID:</b> ${o.id}<br><b>Total:</b> ₹${money(o.total)}<br><b>Status:</b> <span class="status">${o.status||"Order Placed"}</span><br><span class="small">${o.date||""}</span><br><button class="btn" onclick="document.getElementById('trackIdInput').value='${o.id}';trackOrderLive()">Track</button></div>`).join(""):"No orders yet on this device.";
+
+function localOrders(){
+ try{return JSON.parse(localStorage.getItem("scc_orders")||"[]");}
+ catch(e){return [];}
 }
+function saveLocal(o){
+ const arr=localOrders();
+ arr.unshift(o);
+ localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)));
+}
+function renderHistory(){
+ const arr=localOrders();
+ $("historyList").innerHTML=arr.length?arr.map(o=>`
+ <div class="card">
+ <b>Order ID:</b> ${o.id}<br>
+ <b>Total:</b> ₹${money(o.total)}<br>
+ <b>Status:</b> <span class="status">${o.status||"Order Placed"}</span><br>
+ <span class="small">${o.date||""}</span><br>
+ <button class="btn" onclick="document.getElementById('trackIdInput').value='${o.id}';trackOrderLive()">Track</button>
+ </div>`).join(""):"No orders on this device yet.";
+}
+
 window.placeOrder=async()=>{
- const name=$("customer").value.trim(),phone=$("phone").value.trim(),type=$("orderType").value,addr=$("customerAddress").value.trim();
+ const name=$("customer").value.trim();
+ const phone=$("phone").value.trim();
+ const type=$("orderType").value;
+ const address=$("customerAddress").value.trim();
  const chosen=items.filter(i=>cart[i.id]>0);
- if(!name||!phone)return alert("Please enter your name and mobile number.");
- if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Please enter a valid mobile number.");
- if(!chosen.length)return alert("Cart is empty. Please add menu items.");
- if(type==="Home Delivery"&&!addr)return alert("Please enter your delivery address or use current location.");
- const c=calc();if(type==="Home Delivery"&&(!Number.isFinite(Number($("distance").value))||Number($("distance").value)<0))return alert("Please enter a valid delivery distance.");
+
+ if(!name||!phone)return alert("Enter your name and mobile number.");
+ if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Enter a valid mobile number.");
+ if(!chosen.length)return alert("Your cart is empty.");
+ if(type==="Home Delivery"&&!address)return alert("Enter your delivery address.");
+ if(type==="Home Delivery"&&(!Number.isFinite(Number($("distance").value))||Number($("distance").value)<0))return alert("Enter a valid delivery distance.");
+
+ const c=calc();
  const orderItems=chosen.map(i=>({id:i.id,name:i.n,price:i.p,qty:cart[i.id]}));
- const notes=$("notes").value.trim();let orderId="SCC"+Date.now().toString().slice(-9);
- const order={name,phone,type,address:addr,distance:type==="Home Delivery"?Number($("distance").value)||0:0,items:orderItems,subtotal:c.subtotal,delivery:c.delivery,packing:c.packing,total:c.total,notes,status:"Order Placed",createdAt:new Date().toISOString()};
- if(db){try{const ref=await addDoc(collection(db,"orders"),{...order,createdAt:serverTimestamp()});orderId=ref.id;}catch(err){console.error("Firebase save failed:",err);alert("Firebase order save failed. Check Firestore is enabled and its rules. WhatsApp will still open.");}}
- order.id=orderId;order.date=new Date().toLocaleString();saveLocalOrder(order);
- const summary=orderItems.map(i=>`${i.name} × ${i.qty} = ₹${i.price*i.qty}`).join("\n");
- const message=`*Shree Chaat Corner Order*%0A*Order ID:* ${orderId}%0A*Name:* ${name}%0A*Mobile:* ${phone}%0A*Order Type:* ${type}%0A${addr?"*Address:* "+addr+"%0A":""}${type==="Home Delivery"?"*Distance:* "+order.distance+" km%0A":""}%0A${summary}%0A*Items:* ₹${c.subtotal}%0A*Delivery:* ₹${c.delivery}%0A*Packing:* ₹${c.packing}%0A*TOTAL:* ₹${c.total}%0A${notes?"*Notes:* "+notes+"%0A":""}`;
- const wa=SHOP_WHATSAPP.replace(/\D/g,"");
- if(!wa||wa.endsWith("XXXXXXXXXX")){alert("Order created with ID "+orderId+". Check the SHOP_WHATSAPP number in the code.");renderHistory();showPage("history");return}
- window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(message.replace(/%0A/g,"\n")),"_blank");
- alert("Order ID: "+orderId+"\nWhatsApp will open. Press Send there to send your order.");
- renderHistory();showPage("history");
+ const notes=$("notes").value.trim();
+ const order={
+  name,phone,type,address,
+  distance:type==="Home Delivery"?(Number($("distance").value)||0):0,
+  items:orderItems,subtotal:c.subtotal,delivery:c.delivery,
+  packing:c.packing,total:c.total,notes,status:"Order Placed",
+  createdAt:new Date().toISOString()
+ };
+
+ let orderId="SCC"+Date.now().toString().slice(-9);
+ let savedToFirebase=false;
+
+ if(db){
+  try{
+   const orderRef=doc(collection(db,"orders"));
+   orderId=orderRef.id;
+   await setDoc(orderRef,{...order,createdAt:serverTimestamp()});
+   await setDoc(doc(db,"orderStatus",orderId),{
+    status:"Order Placed",updatedAt:serverTimestamp()
+   });
+   savedToFirebase=true;
+  }catch(err){
+   console.error("Order save failed:",err);
+   alert("Firebase could not save this order. Tracking may not work until Firebase rules are fixed. WhatsApp will still open.");
+  }
+ }
+
+ order.id=orderId;
+ order.date=new Date().toLocaleString();
+ saveLocal(order);
+
+ const trackLink=TRACK_URL+"?track="+encodeURIComponent(orderId);
+ const lines=orderItems.map(i=>`${i.name} x ${i.qty} = Rs.${i.price*i.qty}`).join("\n");
+ const message=
+`SHREE CHAAT CORNER ORDER
+Order ID: ${orderId}
+Name: ${name}
+Mobile: ${phone}
+Order Type: ${type}
+${address?"Address: "+address:""}
+${type==="Home Delivery"?"Distance: "+order.distance+" km":""}
+
+${lines}
+
+Items Total: Rs.${c.subtotal}
+Delivery: Rs.${c.delivery}
+Packing: Rs.${c.packing}
+TOTAL: Rs.${c.total}
+${notes?"Notes: "+notes:""}
+
+CUSTOMER TRACKING LINK:
+${trackLink}
+
+OWNER ADMIN LINK (owner login required):
+${ADMIN_URL}
+
+Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}
+Please confirm this order and update its status in Owner Admin.`;
+
+ const wa="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);
+ window.open(wa,"_blank");
+
+ alert("Order ID: "+orderId+
+ "\n\nCustomer tracking link:\n"+trackLink+
+ "\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+
+ "\n\nSend the order in WhatsApp to notify the shop.");
+
+ Object.keys(cart).forEach(k=>delete cart[k]);
+ renderMenu();renderCart();renderHistory();
+ $("trackIdInput").value=orderId;
+ showPage("history");
 };
+
 window.trackOrderLive=async()=>{
- const id=$("trackIdInput").value.trim(),out=$("statusResult");if(!id){out.textContent="Please enter your order ID.";return}
- out.textContent="Checking order status…";
- if(db){try{let snap=await getDoc(doc(db,"orders",id));if(snap.exists()){out.textContent="Current status: "+(snap.data().status||"Order Placed");return}}catch(err){console.error(err);}}
- const local=getLocalOrders().find(o=>o.id===id);
- out.textContent=local?"Status on this device: "+(local.status||"Order Placed")+(db?"":" (Firebase not connected; status may not be live)."):"Order not found. Check the full Order ID. If the order was placed on another phone, Firebase must be configured.";
+ const id=$("trackIdInput").value.trim();
+ const out=$("statusResult");
+ if(!id){out.textContent="Please enter your Order ID.";return;}
+ out.textContent="Checking status…";
+ if(db){
+  try{
+   const snap=await getDoc(doc(db,"orderStatus",id));
+   if(snap.exists()){
+    out.innerHTML=`<p>Order ID: <b>${id}</b></p><p>Current Status: <span class="status">${snap.data().status||"Order Placed"}</span></p><p class="small">Status is from Firebase.</p>`;
+    return;
+   }
+  }catch(err){console.error(err);}
+ }
+ const local=localOrders().find(o=>o.id===id);
+ out.textContent=local
+  ?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update."
+  :"Order not found or Firebase tracking is not configured. Check the complete Order ID.";
 };
+
+function updateAdminUI(user){
+ $("loginPanel").style.display=user?"none":"block";
+ $("adminPanel").style.display=user?"block":"none";
+ $("ownerEmail").textContent=user?.email||"";
+}
+
+if(auth){
+ onAuthStateChanged(auth,user=>updateAdminUI(user));
+}
+
+window.ownerLogin=async()=>{
+ const email=$("adminEmail").value.trim();
+ const password=$("adminPassword").value;
+ if(!email||!password)return alert("Enter owner email and password.");
+ try{
+  await signInWithEmailAndPassword(auth,email,password);
+  alert("Owner login successful.");
+ }catch(err){
+  console.error(err);
+  alert("Login failed. Check the owner account and Firebase Authentication settings.");
+ }
+};
+
+window.ownerLogout=async()=>{
+ try{await signOut(auth);alert("Logged out.");}
+ catch(err){alert("Logout failed.");}
+};
+
 window.updateOrderStatus=async()=>{
- const id=$("adminOrderId").value.trim(),status=$("newStatus").value,out=$("adminResult");
- if(!id){out.textContent="Enter the full Order ID.";return}
- if(!db){out.textContent="Firebase is not configured. Replace the Firebase config placeholders first.";return}
- try{const ref=doc(db,"orders",id),snap=await getDoc(ref);if(!snap.exists()){out.textContent="Order not found. Use the full Firestore document ID.";return}await updateDoc(ref,{status,updatedAt:new Date().toISOString()});out.textContent="Updated successfully: "+status;}catch(err){console.error(err);out.textContent="Update failed. Check Firestore rules and permissions."}
+ const user=auth?.currentUser;
+ const id=$("adminOrderId").value.trim();
+ const status=$("newStatus").value;
+ const out=$("adminResult");
+ if(!user){out.textContent="Please log in as owner first.";return;}
+ if(!id){out.textContent="Enter the full Order ID.";return;}
+ if(!db){out.textContent="Firebase is unavailable.";return;}
+ out.textContent="Updating…";
+ try{
+  const orderRef=doc(db,"orders",id);
+  const snap=await getDoc(orderRef);
+  if(!snap.exists()){out.textContent="Order not found. Check the complete Order ID.";return;}
+  await updateDoc(orderRef,{status,updatedAt:serverTimestamp()});
+  await setDoc(doc(db,"orderStatus",id),{
+   status,updatedAt:serverTimestamp()
+  });
+  out.textContent="Customer status updated successfully: "+status;
+ }catch(err){
+  console.error(err);
+  out.textContent="Update failed. Check that your Firebase account is authorized and Firestore rules are correct.";
+ }
 };
-renderMenu();renderCart();
+
+const params=new URLSearchParams(location.search);
+if(params.get("track")){
+ $("trackIdInput").value=params.get("track");
+ showPage("history");
+ trackOrderLive();
+}else if(params.get("admin")==="1"){
+ showPage("adminPage");
+}
+
+renderMenu();
+renderCart();
+renderHistory();
 </script>
 </body>
 </html>
