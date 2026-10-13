@@ -23,7 +23,7 @@ input,textarea,select{width:100%;padding:10px;border:1px solid #d6d3d1;border-ra
 </style>
 </head>
 <body>
-<header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color:white">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
+<header><h1>🥗 Shree Chaat Corner</h1><p>Good Food • Good Mood ❤️</p><p class="small" style="color: purple">No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p></header>
 <nav>
 <button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
 <button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
@@ -71,10 +71,10 @@ const firebaseConfig = {
   appId: "1:197160794283:web:48971b82bb1b42fdaf1fee"
 };
 /* Replace with your shop WhatsApp number: country code + number, digits only. */
-const SHOP_WHATSAPP = "91XXXXXXXXXX";
+const SHOP_WHATSAPP = "918428656328";
 const PACKING_CHARGE = 0; // Set your packing fee here if needed.
 const items=[
-{id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa chaat"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal chaat"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"cheese puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"vegetable sandwich"},{id:11,n:"Veg Bread Cheese Sandwich",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku snack"},{id:13,n:"Murukku Cheese Sandwich",p:70,s:"cheese sandwich"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra snack"},{id:15,n:"Khakhra Cheese Sandwich",p:90,s:"cheese sandwich"},{id:16,n:"Roti Sabji",p:30,s:"roti curry"},{id:17,n:"Triangle Paratha Sabji",p:40,s:"paratha curry"},{id:18,n:"Methi Paratha Sabji",p:50,s:"methi paratha"},{id:19,n:"Aaloo Paratha Sabji",p:60,s:"aloo paratha"},{id:20,n:"Special Sabji",p:50,s:"paneer curry"},{id:21,n:"Water Bottle ₹10",p:10,s:"water bottle"},{id:22,n:"Water Bottle ₹20",p:20,s:"water bottle"},{id:23,n:"Cool Drink ₹10",p:10,s:"soft drink bottle"},{id:24,n:"Cool Drink ₹20",p:20,s:"soft drink bottle"}];
+{id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa chaat"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal chaat"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"cheese puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"vegetable sandwich"},{id:11,n:"Veg Bread Cheese Sandwich",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku snack"},{id:13,n:"Murukku Cheese Sandwich",p:70,s:"cheese sandwich"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra snack"},{id:15,n:"Khakhra Cheese Sandwich",p:90,s:"cheese sandwich"},{id:16,n:"Roti Sabji",p:30,s:"roti curry"},{id:17,n:"Triangle Paratha Sabji",p:40,s:"paratha curry"},{id:18,n:"Methi Paratha Sabji",p:50,s:"methi paratha"},{id:19,n:"Aaloo Paratha Sabji",p:60,s:"aloo paratha"},{id:20,n:"Special Paneer Sabji",p:50,s:"paneer curry"},{id:21,n:"Water Bottle ₹10",p:10,s:"water bottle"},{id:22,n:"Water Bottle ₹20",p:20,s:"water bottle"},{id:23,n:"Cool Drink ₹10",p:10,s:"soft drink bottle"},{id:24,n:"Cool Drink ₹20",p:20,s:"soft drink bottle"}];
 const cart={}; let db=null;
 const firebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.appId !== "YOUR_APP_ID";
 try { if(firebaseConfigured) db=getFirestore(initializeApp(firebaseConfig)); } catch(err){ console.error("Firebase initialization error:",err); }
