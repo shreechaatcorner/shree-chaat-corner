@@ -7,7 +7,7 @@
   *{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#fffaf5;color:#292524}
   header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:15px}
   nav{display:flex;gap:5px;overflow-x:auto;background:white;padding:8px;position:sticky;top:0;z-index:10;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
-  nav button{border:0;border-radius:20px;background:#ffedd5;padding:8px 12px;color:#9a3412;font-weight:bold;cursor:pointer}
+  nav button{border:0;border-radius:20px;background:#ffedd5;padding:8px 12px;color:#9a3412;font-weight:bold;cursor:pointer;font-size:12px}
   main{max-width:800px;margin:auto;padding:10px} .page{display:none} .page.active{display:block}
   .card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:12px;margin:10px 0}
   .menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -22,13 +22,13 @@
   <button onclick="showPage('home')">🏠 Home</button>
   <button onclick="showPage('menuPage')">🍽️ Menu</button>
   <button onclick="showPage('cartPage')">🛒 Cart</button>
-  <button onclick="showPage('trackPage')">🔍 Track</button>
-  <button onclick="showPage('adminPage')" style="background:#78716c;color:white;">👑 Owner</button>
+  <button onclick="showPage('history')">📋 History & Track</button>
+  <button onclick="openAdmin()" style="background:#78716c;color:white;">👑 Owner</button>
 </nav>
 <main>
   <section id="home" class="page active">
     <div class="card" style="text-align:center;background:#ffedd5;">
-      <h2>Welcome!</h2><p>Tasty snacks, chaat, and meals at affordable prices.</p>
+      <h2>Welcome!</h2><p>Tasty snacks, chaat, and meals at affordable prices in Chennai.</p>
       <button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
     </div>
   </section>
@@ -47,16 +47,17 @@
       <button class="btn" style="width:100%;" onclick="placeOrder()">Order on WhatsApp</button>
     </div>
   </section>
-  <section id="trackPage" class="page">
+  <section id="history" class="page">
     <h2>🔍 Live Order Tracking</h2>
     <div class="panel">
       <input id="trackIdInput" placeholder="Enter Order ID to Track">
       <button class="btn" style="width:100%;" onclick="trackOrderLive()">Track Live Status</button>
-      <div id="statusResult" style="margin-top:15px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
+      <div id="statusResult" style="margin-top:10px;font-size:18px;font-weight:bold;color:#ea580c;"></div>
     </div>
+    <h2>📋 My Order History</h2><div id="historyList">No orders yet.</div>
   </section>
   <section id="adminPage" class="page">
-    <h2>👑 Active Orders & Status Update</h2><div id="adminOrders">Loading Orders...</div>
+    <h2>👑 Owner Panel (Secure)</h2><div id="adminOrders">Loading Orders...</div>
   </section>
 </main>
 <script type="module">
@@ -71,7 +72,7 @@
   const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
   const items=[
-    {id:1,name:"Samosa",price:15,s:"samosa"},{id:2,name:"Kachori",price:20,s:"kachori"},{id:3,name:"Samosa Chaat",price:50,s:"samosa chaat"},{id:4,name:"Kachori Chaat",price:50,s:"kachori chaat"},{id:5,name:"Sundal Chaat",price:40,s:"sundal"},{id:6,name:"Pani Puri",price:30,s:"pani puri"},{id:7,name:"Dahi Puri",price:35,s:"dahi puri"},{id:8,name:"Cheese Puri",price:65,s:"cheese puri"},{id:9,name:"Sev Puri",price:45,s:"sev puri"},{id:10,name:"Veg Bread Sandwich",price:40,s:"sandwich"},{id:11,name:"Veg Bread Cheese",price:50,s:"cheese sandwich"},{id:12,name:"Murukku Sandwich",price:60,s:"murukku"},{id:13,name:"Murukku Cheese",price:70,s:"murukku cheese"},{id:14,name:"Khakhra Sandwich",price:70,s:"khakhra"},{id:15,name:"Khakhra Cheese",price:90,s:"khakhra cheese"},{id:16,name:"Roti Sabji",price:30,s:"roti"},{id:17,name:"Triangle Paratha",price:40,s:"paratha"},{id:18,name:"Methi Paratha",price:50,s:"methi"},{id:19,name:"Aaloo Paratha",price:60,s:"aloo"},{id:20,name:"Special Sabji",price:50,s:"curry"},{id:21,name:"Water Bottle 10",price:10,s:"water"},{id:22,name:"Water Bottle 20",price:20,s:"water bottle"},{id:23,name:"Cool Drink 10",price:10,s:"cold drink"},{id:24,name:"Cool Drink 20",price:20,s:"cool drink"}
+    {id:1,n:"Samosa",p:15,s:"samosa"},{id:2,n:"Kachori",p:20,s:"kachori"},{id:3,n:"Samosa Chaat",p:50,s:"samosa"},{id:4,n:"Kachori Chaat",p:50,s:"kachori"},{id:5,n:"Sundal Chaat",p:40,s:"sundal"},{id:6,n:"Pani Puri",p:30,s:"pani puri"},{id:7,n:"Dahi Puri",p:35,s:"dahi puri"},{id:8,n:"Cheese Puri",p:65,s:"puri"},{id:9,n:"Sev Puri",p:45,s:"sev puri"},{id:10,n:"Veg Bread Sandwich",p:40,s:"sandwich"},{id:11,n:"Veg Bread Cheese",p:50,s:"cheese sandwich"},{id:12,n:"Murukku Sandwich",p:60,s:"murukku"},{id:13,n:"Murukku Cheese",p:70,s:"cheese"},{id:14,n:"Khakhra Sandwich",p:70,s:"khakhra"},{id:15,n:"Khakhra Cheese",p:90,s:"cheese"},{id:16,n:"Roti Sabji",p:30,s:"roti"},{id:17,n:"Triangle Paratha",p:40,s:"paratha"},{id:18,n:"Methi Paratha",p:50,s:"methi"},{id:19,n:"Aaloo Paratha",p:60,s:"aloo"},{id:20,n:"Special Sabji",p:50,s:"curry"},{id:21,n:"Water Bottle 10",p:10,s:"water"},{id:22,n:"Water Bottle 20",p:20,s:"water"},{id:23,n:"Cool Drink 10",p:10,s:"drink"},{id:24,n:"Cool Drink 20",p:20,s:"drink"}
   ];
   const cart = {};
 
@@ -85,8 +86,8 @@
     items.forEach(i => {
       const qty = cart[i.id] || 0;
       html += `<div class="card">
-        <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}" onerror="this.src='https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400';">
-        <div style="margin-top:8px;"><b>${i.name}</b><br>₹${i.price}</div>
+        <img src="https://loremflickr.com/400/300/${encodeURIComponent(i.s)}?lock=${i.id}" onerror="this.src='https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=400';">
+        <div style="margin-top:8px;"><b>${i.n}</b><br>₹${i.p}</div>
         <div style="margin-top:8px;">
           ${qty > 0 ? `<button class="btn" onclick="change(${i.id}, -1)">-</button> ${qty} <button class="btn" onclick="change(${i.id}, 1)">+</button>` : `<button class="btn" onclick="change(${i.id}, 1)">Add</button>`}
         </div>
@@ -106,8 +107,8 @@
     let html = ""; let total = 0;
     items.forEach(i => {
       if(cart[i.id]) {
-        total += i.price * cart[i.id];
-        html += `<div>${i.name} x ${cart[i.id]} = ₹${i.price * cart[i.id]}</div>`;
+        total += i.p * cart[i.id];
+        html += `<div>${i.n} x ${cart[i.id]} = ₹${i.p * cart[i.id]}</div>`;
       }
     });
     document.getElementById("cart").innerHTML = html || "Cart is empty.";
@@ -121,7 +122,7 @@
         document.getElementById("customerAddress").value = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
         s.textContent = "✅ Location Added!";
       },
-      () => { s.textContent = "❌ GPS blocks on local files. Works automatically on secure HTTPS!"; }
+      () => { s.textContent = "❌ GPS blocks locally. Works on secure HTTPS (GitHub Pages)!"; }
     );
   };
 
@@ -134,8 +135,8 @@
     let total = 0; let summary = "";
     items.forEach(i => {
       if(cart[i.id]) {
-        total += i.price * cart[i.id];
-        summary += `\n- ${i.name} x ${cart[i.id]}`;
+        total += i.p * cart[i.id];
+        summary += `\n- ${i.n} x ${cart[i.id]}`;
       }
     });
     if(total === 0) return alert("Cart is empty!");
@@ -144,28 +145,23 @@
       const docRef = await addDoc(collection(db, "orders"), { name, phone, address: addr, items: cart, total, status: "Order Placed", timestamp: new Date() });
       const orderId = docRef.id;
       const shortId = orderId.slice(-6).toUpperCase();
+      const base = window.location.href.split('?')[0];
 
-      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${shortId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track status: ${window.location.href.split('?')[0]}?id=${orderId}_`;
+      // Local History save
+      let history = JSON.parse(localStorage.getItem("orders") || "[]");
+      history.push({ id: orderId, name, items: summary, total, status: "Order Placed", date: new Date().toLocaleDateString() });
+      localStorage.setItem("orders", JSON.stringify(history));
+
+      const text = `*Shree Chaat Corner Order*\n*Order ID:* ${shortId}\n*Name:* ${name}\n*Location:* ${addr}\n\n*Items Ordered:*${summary}\n\n*Total:* ₹${total}\n\n_Track status: ${base}?id=${orderId}_\n\n*Admin Status (Owner Only):* ${base}?adminId=${orderId}`;
       window.open(`https://wa.me/918428656328?text=${encodeURIComponent(text)}`);
     } catch (e) { alert("Error: " + e.message); }
   };
 
-  window.trackOrderLive = async () => {
-    let id = document.getElementById("trackIdInput").value.trim();
-    if(!id) return alert("Please enter Order ID!");
-    const resultDiv = document.getElementById("statusResult");
-    resultDiv.textContent = "🔍 Fetching status...";
-    try {
-      const docSnap = await getDoc(doc(db, "orders", id));
-      if (docSnap.exists()) {
-        resultDiv.textContent = `Live Status: ${docSnap.data().status}`;
-      } else {
-        resultDiv.textContent = "❌ Order ID not found.";
-      }
-    } catch (e) { resultDiv.textContent = "❌ Error fetching status."; }
+  window.openAdmin = () => {
+    if(prompt("Enter 4-Digit Owner PIN:") === "8428") showPage('adminPage');
+    else alert("❌ Invalid PIN!");
   };
 
-  // 1-Click Owner Panel logic
   onSnapshot(collection(db, "orders"), (snapshot) => {
     let html = "";
     snapshot.forEach(docSnap => {
@@ -189,13 +185,44 @@
     } catch(e) { alert("Error: " + e.message); }
   };
 
+  window.trackOrderLive = async () => {
+    let id = document.getElementById("trackIdInput").value.trim();
+    if(!id) return alert("Please enter Order ID!");
+    const resultDiv = document.getElementById("statusResult");
+    resultDiv.textContent = "🔍 Fetching status...";
+    try {
+      const docSnap = await getDoc(doc(db, "orders", id));
+      if (docSnap.exists()) {
+        resultDiv.textContent = `Live Status: ${docSnap.data().status}`;
+      } else {
+        resultDiv.textContent = "❌ Order ID not found.";
+      }
+    } catch (e) { resultDiv.textContent = "❌ Error fetching status."; }
+  };
+
+  function renderHistory() {
+    let history = JSON.parse(localStorage.getItem("orders") || "[]");
+    let html = history.map(o => `
+      <div class="card" style="text-align:left;">
+        <b>Order ID: ${o.id.slice(-6).toUpperCase()}</b> (${o.date})<br>
+        <span style="font-size:13px;color:#666;">${o.items.replace(/\n/g, '<br>')}</span><br>
+        <b>Total: ₹${o.total}</b> | Status: <span style="color:#ea580c;font-weight:bold;">${o.status}</span><br>
+        <button class="btn" style="padding:4px 8px;font-size:12px;" onclick="trackHistoryOrder('${o.id}')">🔍 Track Live</button>
+      </div>`).join("");
+    document.getElementById("historyList").innerHTML = html || "No orders yet.";
+  }
+
+  window.trackHistoryOrder = (id) => {
+    document.getElementById("trackIdInput").value = id;
+    showPage('history');
+    trackOrderLive();
+  };
+
   const urlParams = new URLSearchParams(window.location.search);
   const autoId = urlParams.get('id');
+  const adminId = urlParams.get('adminId');
+
   if(autoId) {
-    showPage('trackPage');
-    document.getElementById("trackIdInput").value = autoId;
-    setTimeout(trackOrderLive, 1000);
-  }
-</script>
-</body>
-</html>
+    showPage('history');
+    document.getElementById("trackIdInputNo response
+        
