@@ -1,0 +1,14 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#ea580c"/>
+  <circle cx="256" cy="210" r="125" fill="#fff7ed"/>
+  <path d="M145 190 Q256 145 367 190 L345 275 Q256 325 167 275 Z" fill="#16a34a"/>
+  <circle cx="210" cy="205" r="24" fill="#facc15"/>
+  <circle cx="265" cy="185" r="25" fill="#fb923c"/>
+  <circle cx="305" cy="220" r="22" fill="#facc15"/>
+  <circle cx="250" cy="245" r="24" fill="#dc2626"/>
+  <path d="M155 270 Q256 330 357 270 L335 305 Q256 350 177 305 Z" fill="#ffffff"/>
+  <text x="256" y="385" font-size="39" font-weight="bold" text-anchor="middle" fill="#ffffff">SHREE CHAAT</text>
+  <text x="256" y="430" font-size="32" font-weight="bold" text-anchor="middle" fill="#ffedd5">CORNER</text>
+</svg>
+    
