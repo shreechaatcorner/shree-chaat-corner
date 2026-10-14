@@ -193,7 +193,6 @@ const firebaseConfig={
 };  
   
 const SHOP_WHATSAPP="918428656328";  
-const PACKING_CHARGE=0;  
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";  
 const ADMIN_URL=TRACK_URL+"?admin=1";  
   
@@ -205,14 +204,14 @@ const items=[
 {id:5,n:"Sundal Chaat",p:40},  
 {id:6,n:"Pani Puri",p:30},  
 {id:7,n:"Dahi Puri",p:35},  
-{id:8,n:"Cheese Puri",p:70},  
-{id:9,n:"Sev Puri",p:50},  
-{id:10,n:"Veg Bread Sandwich",p:45},  
-{id:11,n:"Veg Bread Cheese Sandwich",p:55},  
-{id:12,n:"Murukku Sandwich",p:65},  
-{id:13,n:"Murukku Cheese Sandwich",p:75},  
-{id:14,n:"Khakhra Sandwich",p:75},  
-{id:15,n:"Khakhra Cheese Loaded Sandwich",p:95},  
+{id:8,n:"Cheese Puri",p:65},  
+{id:9,n:"Sev Puri",p:45},  
+{id:10,n:"Veg Bread Sandwich",p:40},  
+{id:11,n:"Veg Bread Cheese Sandwich",p:50},  
+{id:12,n:"Murukku Sandwich",p:60},  
+{id:13,n:"Murukku Cheese Sandwich",p:70},  
+{id:14,n:"Khakhra Sandwich",p:70},  
+{id:15,n:"Khakhra Cheese Loaded Sandwich",p:90},  
 {id:16,n:"Roti Sabji",p:30},  
 {id:17,n:"Triangle Paratha Sabji",p:40},  
 {id:18,n:"Methi Paratha Sabji",p:50},  
@@ -272,11 +271,24 @@ function renderMenu(){
  </div>`).join("");  
 }  
   
+// Calculate packing charge: ₹5 extra per quantity for Cheese Puri, Sev Puri, and all Sandwiches (IDs 8 to 15)  
+function getPackingCharge(){  
+ let packing=0;  
+ items.forEach(i=>{  
+  const q=cart[i.id]||0;  
+  if(q>0 && i.id>=8 && i.id<=15){  
+   packing+=q*5;  
+  }  
+ });  
+ return packing;  
+}  
+  
 function calc(){  
  const subtotal=items.reduce((s,i)=>s+i.p*(cart[i.id]||0),0);  
+ const packing=getPackingCharge();  
  const delivery=$("orderType").value==="Home Delivery"  
   ? Math.max(0,Number($("distance").value)||0)*10 : 0;  
- return {subtotal,delivery,packing:PACKING_CHARGE,total:subtotal+delivery+PACKING_CHARGE};  
+ return {subtotal,delivery,packing,total:subtotal+delivery+packing};  
 }  
   
 function renderCart(){  
@@ -499,14 +511,4 @@ const params=new URLSearchParams(location.search);
 if(params.get("track")){  
  $("trackIdInput").value=params.get("track");  
  showPage("history");  
- trackOrderLive();  
-}else if(params.get("admin")==="1"){  
- showPage("adminPage");  
-}  
-  
-renderMenu();  
-renderCart();  
-renderHistory();  
-</script>  
-</body>  
-</html>
+ trackOrderLive
