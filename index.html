@@ -30,9 +30,11 @@ input,textarea,select{width:100%;padding:12px;border:1px solid #d6d3d1;border-ra
 label{font-weight:bold;font-size:14px}
 .small{font-size:12px;color:#78716c;line-height:1.5}
 .status{display:inline-block;background:#ffedd5;color:#9a3412;border-radius:20px;padding:6px 10px;font-weight:bold;font-size:13px}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 a{color:#c2410c;overflow-wrap:anywhere}
-@media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
+@media(max-width:380px){
+ .menu{grid-template-columns:1fr}
+ nav button{font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -44,137 +46,131 @@ a{color:#c2410c;overflow-wrap:anywhere}
 </header>
 
 <nav>
-<button class="active" data-page="home" onclick="showPage('home',this)">🏠 Home</button>
-<button data-page="menuPage" onclick="showPage('menuPage',this)">🍽️ Menu</button>
-<button data-page="cartPage" onclick="showPage('cartPage',this)">🛒 Cart</button>
-<button data-page="history" onclick="showPage('history',this)">📋 History</button>
-<button data-page="history" onclick="openTracking(this)">🔎 Track Status</button>
-<button data-page="aboutPage" onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
-<button data-page="adminPage" onclick="showPage('adminPage',this)">🔐 Owner Admin</button>
+<button class="active" onclick="showPage('home',this)">🏠 Home</button>
+<button onclick="showPage('menuPage',this)">🍽️ Menu</button>
+<button onclick="showPage('cartPage',this)">🛒 Cart</button>
+<button onclick="showPage('history',this)">📋 History</button>
+<button onclick="openTracking(this)">🔎 Track Status</button>
+<button onclick="showPage('aboutPage',this)">ℹ️ About Us</button>
+<button onclick="showPage('adminPage',this)">🔐 Owner Admin</button>
 </nav>
 
 <main>
 <section id="home" class="page active">
-<div class="card" style="text-align:center;background:#ffedd5">
-<h2>Welcome to Shree Chaat Corner!</h2>
-<p>Fresh chaat, snacks, sandwiches and meals at affordable prices.</p>
-<button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
-</div>
-<div class="panel">
-<h3>📦 Track Your Order</h3>
-<p>Enter your Order ID to check your latest order status.</p>
-<button class="btn" onclick="openTracking()">Track My Order</button>
-</div>
-<div class="panel">
-<h3>🛍️ Easy Ordering</h3>
-<p>Select items, add your details and place your order through WhatsApp.</p>
-</div>
+ <div class="card" style="text-align:center;background:#ffedd5">
+  <h2>Welcome to Shree Chaat Corner!</h2>
+  <p>Fresh chaat, snacks, sandwiches and meals at affordable prices.</p>
+  <button class="btn" onclick="showPage('menuPage')">Explore Menu</button>
+ </div>
+ <div class="panel">
+  <h3>📦 Track Your Order</h3>
+  <p>Enter your Order ID to check your latest order status.</p>
+  <button class="btn" onclick="openTracking()">Track My Order</button>
+ </div>
+ <div class="panel">
+  <h3>🛍️ Easy Ordering</h3>
+  <p>Select items, add your details and place your order through WhatsApp.</p>
+ </div>
 </section>
 
 <section id="menuPage" class="page">
-<h2>🍽️ Our Menu</h2>
-<p class="small">Select your favourite items. No food photographs are used in this app.</p>
-<div id="menu" class="menu"></div>
+ <h2>🍽️ Our Menu</h2>
+ <p class="small">Select your favourite items. No food photographs are used in this app.</p>
+ <div id="menu" class="menu"></div>
 </section>
 
 <section id="cartPage" class="page">
-<h2>🛒 Checkout</h2>
-<div class="panel">
-<div id="cart">Cart is empty.</div>
-<h3>Items total: ₹<span id="grand">0</span></h3>
+ <h2>🛒 Checkout</h2>
+ <div class="panel">
+  <div id="cart">Cart is empty.</div>
+  <h3>Items total: ₹<span id="grand">0</span></h3>
 
-<label for="customer">Your Name *</label>
-<input id="customer" placeholder="Enter your name" autocomplete="name">
+  <label for="customer">Your Name *</label>
+  <input id="customer" placeholder="Enter your name" autocomplete="name">
 
-<label for="phone">Mobile Number *</label>
-<input id="phone" type="tel" inputmode="tel" placeholder="10-digit mobile number">
+  <label for="phone">Mobile Number *</label>
+  <input id="phone" type="tel" inputmode="tel" placeholder="10-digit mobile number">
 
-<label for="orderType">Order Type</label>
-<select id="orderType" onchange="toggleDelivery()">
-<option value="Takeaway">Takeaway</option>
-<option value="Home Delivery">Home Delivery</option>
-</select>
+  <label for="orderType">Order Type</label>
+  <select id="orderType" onchange="toggleDelivery()">
+   <option value="Takeaway">Takeaway</option>
+   <option value="Home Delivery">Home Delivery</option>
+  </select>
 
-<div id="deliveryFields" style="display:none">
-<label for="customerAddress">Delivery Address *</label>
-<textarea id="customerAddress" placeholder="House number, street, area"></textarea>
+  <div id="deliveryFields" style="display:none">
+   <label for="customerAddress">Delivery Address *</label>
+   <textarea id="customerAddress" placeholder="House number, street, area"></textarea>
 
-<button class="btn green" onclick="getLocation()">📍 Use Current Location</button>
-<button class="btn" onclick="calculateDistanceFromAddress()">Calculate Distance from Address</button>
+   <label for="distance">Distance from shop (km) *</label>
+   <input id="distance" type="number" min="0.1" step="0.1" placeholder="Enter distance manually" oninput="renderCart()">
+   <p class="small">Enter the distance manually. Delivery charge is ₹10 per km. Example: 2.5 km = ₹25.</p>
+  </div>
 
-<div id="locStatus" class="small"></div>
+  <label for="notes">Order Notes (optional)</label>
+  <textarea id="notes" placeholder="Special instructions"></textarea>
 
-<label for="distance">Calculated Road Distance (km)</label>
-<input id="distance" type="number" min="0" step="0.1" placeholder="Calculate distance first" readonly>
+  <p>Delivery: ₹<span id="deliveryCharge">0</span></p>
+  <p>Packing: ₹<span id="packingCharge">0</span></p>
+  <h3>Total: ₹<span id="finalTotal">0</span></h3>
 
-<p class="small">Delivery charge: ₹10 per km. Use GPS or enter a complete delivery address and tap Calculate Distance. Road distance depends on route service availability.</p>
-</div>
-
-<label for="notes">Order Notes (optional)</label>
-<textarea id="notes" placeholder="Special instructions"></textarea>
-
-<p>Delivery: ₹<span id="deliveryCharge">0</span></p>
-<p>Packing: ₹<span id="packingCharge">0</span></p>
-<h3>Total: ₹<span id="finalTotal">0</span></h3>
-
-<button class="btn green" style="width:100%" onclick="placeOrder()">Place Order on WhatsApp</button>
-<p class="small">WhatsApp will open with your order details. Press Send there to send the order to the shop.</p>
-</div>
+  <button class="btn green" style="width:100%" onclick="placeOrder()">Place Order on WhatsApp</button>
+  <p class="small">WhatsApp will open with your order details. Press Send there to send the order to the shop.</p>
+ </div>
 </section>
 
 <section id="history" class="page">
-<h2>🔎 Track Your Order</h2>
-<div class="panel">
-<label for="trackIdInput">Order ID</label>
-<input id="trackIdInput" placeholder="Enter your complete Order ID">
-<button class="btn" style="width:100%" onclick="trackOrderLive()">Check Order Status</button>
-<div id="statusResult" style="margin-top:12px"></div>
-</div>
-<h2>📋 Order History</h2>
-<div id="historyList">No orders on this device yet.</div>
+ <h2>🔎 Track Your Order</h2>
+ <div class="panel">
+  <label for="trackIdInput">Order ID</label>
+  <input id="trackIdInput" placeholder="Enter your complete Order ID">
+  <button class="btn" style="width:100%" onclick="trackOrderLive()">Check Order Status</button>
+  <div id="statusResult" style="margin-top:12px"></div>
+ </div>
+ <h2>📋 Order History</h2>
+ <div id="historyList">No orders on this device yet.</div>
 </section>
 
 <section id="adminPage" class="page">
-<h2>🔐 Owner Admin</h2>
-<div class="panel">
-<p class="small">Owner login requires Firebase Authentication. Only the authorized owner account should be allowed to update order status.</p>
-<div id="loginPanel">
-<label for="adminEmail">Owner Email</label>
-<input id="adminEmail" type="email" autocomplete="username" placeholder="Owner email">
-<label for="adminPassword">Owner Password</label>
-<input id="adminPassword" type="password" autocomplete="current-password" placeholder="Firebase account password">
-<button class="btn" style="width:100%" onclick="ownerLogin()">Owner Login</button>
-</div>
-<div id="adminPanel" style="display:none">
-<p>Logged in as: <span id="ownerEmail"></span></p>
-<button class="btn gray" onclick="ownerLogout()">Logout</button>
-<hr>
-<label for="adminOrderId">Order ID</label>
-<input id="adminOrderId" placeholder="Enter complete Order ID">
-<label for="newStatus">New Status</label>
-<select id="newStatus">
-<option>Order Placed</option>
-<option>Confirmed</option>
-<option>Preparing</option>
-<option>Ready for Pickup</option>
-<option>Out for Delivery</option>
-<option>Delivered</option>
-<option>Cancelled</option>
-</select>
-<button class="btn green" style="width:100%" onclick="updateOrderStatus()">Update Customer Status</button>
-<div id="adminResult"></div>
-</div>
-</div>
+ <h2>🔐 Owner Admin</h2>
+ <div class="panel">
+  <p class="small">Owner login requires Firebase Authentication. Only the authorized owner account should be allowed to update order status.</p>
+  <div id="loginPanel">
+   <label for="adminEmail">Owner Email</label>
+   <input id="adminEmail" type="email" autocomplete="username" placeholder="Owner email">
+   <label for="adminPassword">Owner Password</label>
+   <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Firebase account password">
+   <button class="btn" style="width:100%" onclick="ownerLogin()">Owner Login</button>
+  </div>
+  <div id="adminPanel" style="display:none">
+   <p>Logged in as: <span id="ownerEmail"></span></p>
+   <button class="btn gray" onclick="ownerLogout()">Logout</button>
+   <hr>
+   <label for="adminOrderId">Order ID</label>
+   <input id="adminOrderId" placeholder="Enter complete Order ID">
+   <label for="newStatus">New Status</label>
+   <select id="newStatus">
+    <option>Order Placed</option>
+    <option>Confirmed</option>
+    <option>Preparing</option>
+    <option>Ready for Pickup</option>
+    <option>Out for Delivery</option>
+    <option>Delivered</option>
+    <option>Cancelled</option>
+   </select>
+   <button class="btn green" style="width:100%" onclick="updateOrderStatus()">Update Customer Status</button>
+   <div id="adminResult"></div>
+  </div>
+ </div>
 </section>
 
 <section id="aboutPage" class="page">
-<div class="panel">
-<h2>About Us</h2>
-<p>Shree Chaat Corner serves chaat, snacks, sandwiches and meal options with care and at affordable prices.</p>
-<h3>Our Address</h3>
-<p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p>
-<p>Contact: <a href="https://wa.me/918428656328">WhatsApp 8428656328</a></p>
-</div>
+ <div class="panel">
+  <h2>About Us</h2>
+  <p>Shree Chaat Corner serves chaat, snacks, sandwiches and meal options with care and at affordable prices.</p>
+  <h3>Our Address</h3>
+  <p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019</p>
+  <p>Contact: <a href="https://wa.me/918428656328">WhatsApp 8428656328</a></p>
+ </div>
 </section>
 </main>
 
@@ -183,21 +179,14 @@ Shree Chaat Corner • Chennai
 </footer>
 
 <script>
+"use strict";
+
 const SHOP_WHATSAPP="918428656328";
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";
 const ADMIN_URL=TRACK_URL+"?admin=1";
-const SHOP_ADDRESS="No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019";
 const DELIVERY_PER_KM=10;
 const PACKING_PER_QTY=5;
 const PACKING_ITEM_IDS=[8,9,10,11,12,13,14,15];
-
-let shopCoords=null;
-let customerCoords=null;
-let db=null,auth=null;
-let fsModule=null,authModule=null;
-const cart={};
-const $=id=>document.getElementById(id);
-const money=n=>Math.round(Number(n)||0).toString();
 
 const items=[
 {id:1,n:"Samosa",p:15},
@@ -226,6 +215,14 @@ const items=[
 {id:24,n:"Cool Drink ₹20",p:20}
 ];
 
+let db=null;
+let auth=null;
+let fsModule=null;
+let authModule=null;
+const cart={};
+const $=id=>document.getElementById(id);
+const money=n=>(Math.round((Number(n)||0)*100)/100).toString();
+
 async function initFirebase(){
  try{
   const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -250,13 +247,14 @@ async function initFirebase(){
   updateAdminUI(null);
  }
 }
-initFirebase();
 
 window.showPage=(id,btn)=>{
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  if($(id))$(id).classList.add("active");
+
  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
  if(btn)btn.classList.add("active");
+
  if(id==="history")renderHistory();
  if(id==="adminPage")updateAdminUI(auth?.currentUser||null);
 };
@@ -268,58 +266,62 @@ window.openTracking=(btn)=>{
  if(orderId)trackOrderLive();
 };
 
-const qtyButtons=i=>{
+function qtyButtons(i){
  const q=cart[i.id]||0;
  return q
- ? `<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${q} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`
- : `<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`;
-};
+  ? `<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${q} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`
+  : `<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`;
+}
 
 function renderMenu(){
  $("menu").innerHTML=items.map(i=>`
- <div class="card">
-  <div style="font-size:28px">🍽️</div>
-  <div class="item-name">${i.n}</div>
-  <div class="price">₹${i.p}${PACKING_ITEM_IDS.includes(i.id)?" + ₹5 packing per quantity":""}</div>
-  <div>${qtyButtons(i)}</div>
- </div>`).join("");
+  <div class="card">
+   <div style="font-size:28px">🍽️</div>
+   <div class="item-name">${i.n}</div>
+   <div class="price">₹${i.p}${PACKING_ITEM_IDS.includes(i.id)?" + ₹5 packing per quantity":""}</div>
+   <div>${qtyButtons(i)}</div>
+  </div>
+ `).join("");
 }
 
 function getPackingCharge(){
- return items.reduce((sum,i)=>
-  sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0),0);
+ return items.reduce((sum,i)=>{
+  return sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0);
+ },0);
 }
 
 function calc(){
  const subtotal=items.reduce((sum,i)=>sum+i.p*(cart[i.id]||0),0);
  const packing=getPackingCharge();
- const distance=Number($("distance").value);
- const validDistance=$("distance").value.trim()!==""&&Number.isFinite(distance)&&distance>0;
+ const distanceText=$("distance").value.trim();
+ const distance=Number(distanceText);
+ const validDistance=distanceText!==""&&Number.isFinite(distance)&&distance>0;
+
  const delivery=$("orderType").value==="Home Delivery"&&validDistance
-  ? Math.round(distance*DELIVERY_PER_KM)
+  ? distance*DELIVERY_PER_KM
   : 0;
+
  return {subtotal,delivery,packing,total:subtotal+delivery+packing};
 }
 
 function renderCart(){
- const chosen=items.filter(i=>cart[i.id]>0);
+ const chosen=items.filter(i=>(cart[i.id]||0)>0);
  const c=calc();
 
  $("cart").innerHTML=chosen.length
- ? chosen.map(i=>{
-    const qty=cart[i.id];
-    const itemTotal=i.p*qty;
-    const packing=PACKING_ITEM_IDS.includes(i.id)?qty*PACKING_PER_QTY:0;
-    return `<p><b>${i.n} × ${qty} = ₹${itemTotal}</b>${packing?`<br><span class="small">Packing: ₹${packing}</span>`:""}</p>`;
-   }).join("")
- : "Cart is empty.";
+  ? chosen.map(i=>{
+     const qty=cart[i.id];
+     const itemTotal=i.p*qty;
+     const packing=PACKING_ITEM_IDS.includes(i.id)?qty*PACKING_PER_QTY:0;
+     return `<p><b>${i.n} × ${qty} = ₹${itemTotal}</b>${packing?`<br><span class="small">Packing: ₹${packing}</span>`:""}</p>`;
+    }).join("")
+  : "Cart is empty.";
 
  $("grand").textContent=money(c.subtotal);
  $("deliveryCharge").textContent=money(c.delivery);
  $("packingCharge").textContent=money(c.packing);
  $("finalTotal").textContent=money(c.total);
 }
-window.renderCart=renderCart;
 
 window.changeQty=(id,delta)=>{
  cart[id]=Math.max(0,(cart[id]||0)+delta);
@@ -329,112 +331,41 @@ window.changeQty=(id,delta)=>{
 };
 
 window.toggleDelivery=()=>{
- $("deliveryFields").style.display=$("orderType").value==="Home Delivery"?"block":"none";
+ const isDelivery=$("orderType").value==="Home Delivery";
+ $("deliveryFields").style.display=isDelivery?"block":"none";
+ if(!isDelivery)$("distance").value="";
  renderCart();
-};
-
-async function geocodeAddress(address){
- const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(address);
- const response=await fetch(url,{headers:{"Accept":"application/json"}});
- if(!response.ok)throw new Error("Address lookup service unavailable.");
- const results=await response.json();
- if(!results.length)throw new Error("Address not found. Please enter a more complete address.");
- return {lat:Number(results[0].lat),lon:Number(results[0].lon)};
-}
-
-async function getShopCoords(){
- if(shopCoords)return shopCoords;
- shopCoords=await geocodeAddress(SHOP_ADDRESS);
- return shopCoords;
-}
-
-async function getRoadDistance(origin){
- const shop=await getShopCoords();
- const url=`https://router.project-osrm.org/route/v1/driving/${shop.lon},${shop.lat};${origin.lon},${origin.lat}?overview=false`;
- const response=await fetch(url);
- if(!response.ok)throw new Error("Road route service unavailable.");
- const data=await response.json();
- if(data.code!=="Ok"||!data.routes||!data.routes.length)
-  throw new Error("Road route could not be found for this location.");
- return data.routes[0].distance/1000;
-}
-
-async function setCalculatedDistance(coords){
- const status=$("locStatus");
- const distanceInput=$("distance");
- status.textContent="Calculating road distance…";
- distanceInput.value="";
- renderCart();
-
- try{
-  const km=await getRoadDistance(coords);
-  customerCoords=coords;
-  distanceInput.value=km.toFixed(1);
-  status.textContent=`Road distance calculated: ${km.toFixed(1)} km. Delivery charge: ₹${money(km*DELIVERY_PER_KM)}.`;
-  renderCart();
- }catch(err){
-  console.error(err);
-  status.textContent=err.message||"Distance calculation failed. Try again or enter a more complete address.";
-  distanceInput.value="";
-  renderCart();
- }
-}
-
-window.getLocation=()=>{
- const status=$("locStatus");
- if(!navigator.geolocation){
-  status.textContent="Location is not supported by this browser.";
-  return;
- }
- status.textContent="Getting your current location…";
- navigator.geolocation.getCurrentPosition(async pos=>{
-  const coords={lat:pos.coords.latitude,lon:pos.coords.longitude};
-  const mapLink=`https://maps.google.com/?q=${coords.lat},${coords.lon}`;
-  const address=$("customerAddress");
-  if(!address.value.trim())address.value="Delivery location: "+mapLink;
-  else if(!address.value.includes(mapLink))address.value=address.value.trim()+"\nGPS location: "+mapLink;
-  await setCalculatedDistance(coords);
- },()=>{
-  status.textContent="Location unavailable. Allow location permission or enter your full address and calculate distance.";
- },{enableHighAccuracy:true,timeout:15000,maximumAge:60000});
-};
-
-window.calculateDistanceFromAddress=async()=>{
- const address=$("customerAddress").value.trim();
- if(!address)return alert("Please enter your complete delivery address first.");
- $("locStatus").textContent="Finding address…";
- $("distance").value="";
- renderCart();
- try{
-  const coords=await geocodeAddress(address);
-  await setCalculatedDistance(coords);
- }catch(err){
-  console.error(err);
-  $("locStatus").textContent=err.message||"Address lookup failed. Please check the address and try again.";
- }
 };
 
 function localOrders(){
- try{return JSON.parse(localStorage.getItem("scc_orders")||"[]");}
- catch(e){return [];}
+ try{
+  return JSON.parse(localStorage.getItem("scc_orders")||"[]");
+ }catch(e){
+  return [];
+ }
 }
 
-function saveLocal(o){
- const arr=localOrders();
- arr.unshift(o);
- localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)));
+function saveLocal(order){
+ try{
+  const arr=localOrders();
+  arr.unshift(order);
+  localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)));
+ }catch(e){
+  console.error("Local order save failed:",e);
+ }
 }
 
 function renderHistory(){
  const arr=localOrders();
  $("historyList").innerHTML=arr.length?arr.map(o=>`
- <div class="card">
- <b>Order ID:</b> ${o.id}<br>
- <b>Total:</b> ₹${money(o.total)}<br>
- <b>Status:</b> <span class="status">${o.status||"Order Placed"}</span><br>
- <span class="small">${o.date||""}</span><br>
- <button class="btn" onclick="document.getElementById('trackIdInput').value='${o.id}';trackOrderLive()">Track</button>
- </div>`).join(""):"No orders on this device yet.";
+  <div class="card">
+   <b>Order ID:</b> ${o.id}<br>
+   <b>Total:</b> ₹${money(o.total)}<br>
+   <b>Status:</b> <span class="status">${o.status||"Order Placed"}</span><br>
+   <span class="small">${o.date||""}</span><br>
+   <button class="btn" onclick="document.getElementById('trackIdInput').value='${o.id}';trackOrderLive()">Track</button>
+  </div>
+ `).join(""):"No orders on this device yet.";
 }
 
 window.placeOrder=async()=>{
@@ -442,15 +373,19 @@ window.placeOrder=async()=>{
  const phone=$("phone").value.trim();
  const type=$("orderType").value;
  const address=$("customerAddress").value.trim();
- const chosen=items.filter(i=>cart[i.id]>0);
- const distance=Number($("distance").value);
+ const distanceText=$("distance").value.trim();
+ const distance=Number(distanceText);
+ const chosen=items.filter(i=>(cart[i.id]||0)>0);
 
  if(!name||!phone)return alert("Enter your name and mobile number.");
  if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Enter a valid mobile number.");
  if(!chosen.length)return alert("Your cart is empty.");
  if(type==="Home Delivery"&&!address)return alert("Enter your delivery address.");
- if(type==="Home Delivery"&&(!$("distance").value.trim()||!Number.isFinite(distance)||distance<=0))
-  return alert("Please calculate the delivery distance before placing the order.");
+
+ if(type==="Home Delivery"&&
+   (!distanceText||!Number.isFinite(distance)||distance<=0)){
+  return alert("Enter the delivery distance in kilometres.");
+ }
 
  const c=calc();
  const orderItems=chosen.map(i=>{
@@ -463,11 +398,20 @@ window.placeOrder=async()=>{
  const order={
   name,phone,type,address,
   distance:type==="Home Delivery"?distance:0,
-  locationLink:customerCoords?`https://maps.google.com/?q=${customerCoords.lat},${customerCoords.lon}`:"",
-  items:orderItems,subtotal:c.subtotal,delivery:c.delivery,
-  packing:c.packing,total:c.total,notes,status:"Order Placed",
+  items:orderItems,
+  subtotal:c.subtotal,
+  delivery:c.delivery,
+  packing:c.packing,
+  total:c.total,
+  notes,
+  status:"Order Placed",
   createdAt:new Date().toISOString()
  };
+
+ // Open a blank tab immediately so mobile browsers do not block WhatsApp
+ // while Firebase is saving the order.
+ let waWindow=null;
+ try{waWindow=window.open("about:blank","_blank");}catch(e){}
 
  let orderId="SCC"+Date.now().toString().slice(-9);
  let savedToFirebase=false;
@@ -476,13 +420,18 @@ window.placeOrder=async()=>{
   try{
    const orderRef=fsModule.doc(fsModule.collection(db,"orders"));
    orderId=orderRef.id;
-   await fsModule.setDoc(orderRef,{...order,createdAt:fsModule.serverTimestamp()});
+   await fsModule.setDoc(orderRef,{
+    ...order,
+    createdAt:fsModule.serverTimestamp()
+   });
    await fsModule.setDoc(fsModule.doc(db,"orderStatus",orderId),{
-    status:"Order Placed",updatedAt:fsModule.serverTimestamp()
+    status:"Order Placed",
+    updatedAt:fsModule.serverTimestamp()
    });
    savedToFirebase=true;
   }catch(err){
    console.error("Order save failed:",err);
+   if(waWindow)waWindow.close();
    alert("Firebase could not save this order. WhatsApp will still open, but live tracking may not work.");
   }
  }
@@ -504,15 +453,14 @@ Name: ${name}
 Mobile: ${phone}
 Order Type: ${type}
 ${address?"Address: "+address:""}
-${order.locationLink?"Customer GPS: "+order.locationLink:""}
-${type==="Home Delivery"?"Road Distance: "+order.distance+" km":""}
+${type==="Home Delivery"?"Customer-entered distance: "+distance+" km":""}
 
 ${lines}
 
 Items Total: Rs.${c.subtotal}
-Delivery: Rs.${c.delivery}
+Delivery: Rs.${money(c.delivery)}
 Packing: Rs.${c.packing}
-TOTAL: Rs.${c.total}
+TOTAL: Rs.${money(c.total)}
 ${notes?"Notes: "+notes:""}
 
 CUSTOMER TRACKING LINK:
@@ -525,13 +473,125 @@ Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}
 Please confirm this order and update its status in Owner Admin.`;
 
  const wa="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);
- window.open(wa,"_blank");
+
+ if(waWindow){
+  try{waWindow.location.href=wa;}
+  catch(e){window.location.href=wa;}
+ }else{
+  window.location.href=wa;
+ }
 
  alert("Order ID: "+orderId+
- "\n\nCustomer tracking link:\n"+trackLink+
- "\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+
- "\n\nSend the order in WhatsApp to notify the shop.");
+  "\n\nCustomer tracking link:\n"+trackLink+
+  "\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+
+  "\n\nSend the order in WhatsApp to notify the shop.");
 
  Object.keys(cart).forEach(k=>delete cart[k]);
+ $("distance").value="";
+ $("customerAddress").value="";
+ $("notes").value="";
  renderMenu();
- ren
+ renderCart();
+ renderHistory();
+ $("trackIdInput").value=orderId;
+ showPage("history");
+};
+
+window.trackOrderLive=async()=>{
+ const id=$("trackIdInput").value.trim();
+ const out=$("statusResult");
+
+ if(!id){out.textContent="Please enter your Order ID.";return;}
+ out.textContent="Checking status…";
+
+ if(db&&fsModule){
+  try{
+   const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));
+   if(snap.exists()){
+    const status=snap.data().status||"Order Placed";
+    out.innerHTML=`<p>Order ID: <b>${id}</b></p><p>Current Status: <span class="status">${status}</span></p><p class="small">Status is from Firebase.</p>`;
+    return;
+   }
+  }catch(err){
+   console.error("Tracking lookup failed:",err);
+  }
+ }
+
+ const local=localOrders().find(o=>o.id===id);
+ out.textContent=local
+  ?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update."
+  :"Order not found or Firebase tracking is not configured. Check the complete Order ID.";
+};
+
+function updateAdminUI(user){
+ if($("loginPanel"))$("loginPanel").style.display=user?"none":"block";
+ if($("adminPanel"))$("adminPanel").style.display=user?"block":"none";
+ if($("ownerEmail"))$("ownerEmail").textContent=user?.email||"";
+}
+
+window.ownerLogin=async()=>{
+ const email=$("adminEmail").value.trim();
+ const password=$("adminPassword").value;
+
+ if(!email||!password)return alert("Enter owner email and password.");
+ if(!auth||!authModule)return alert("Firebase Auth is not available. Check your internet connection.");
+
+ try{
+  await authModule.signInWithEmailAndPassword(auth,email,password);
+  alert("Owner login successful.");
+ }catch(err){
+  console.error("Owner login failed:",err);
+  alert("Login failed. Check owner account details and Firebase Authentication settings.");
+ }
+};
+
+window.ownerLogout=async()=>{
+ try{
+  if(auth&&authModule)await authModule.signOut(auth);
+  updateAdminUI(null);
+  alert("Logged out.");
+ }catch(err){
+  console.error(err);
+  alert("Logout failed.");
+ }
+};
+
+window.updateOrderStatus=async()=>{
+ const user=auth?.currentUser;
+ const id=$("adminOrderId").value.trim();
+ const status=$("newStatus").value;
+ const out=$("adminResult");
+
+ if(!user){out.textContent="Please log in as owner first.";return;}
+ if(!id){out.textContent="Enter the full Order ID.";return;}
+ if(!db||!fsModule){out.textContent="Firebase is unavailable.";return;}
+
+ out.textContent="Updating…";
+ try{
+  const orderRef=fsModule.doc(db,"orders",id);
+  const snap=await fsModule.getDoc(orderRef);
+
+  if(!snap.exists()){
+   out.textContent="Order not found. Check the complete Order ID.";
+   return;
+  }
+
+  await fsModule.updateDoc(orderRef,{
+   status,
+   updatedAt:fsModule.serverTimestamp()
+  });
+  await fsModule.setDoc(fsModule.doc(db,"orderStatus",id),{
+   status,
+   updatedAt:fsModule.serverTimestamp()
+  });
+
+  out.textContent="Customer status updated successfully: "+status;
+ }catch(err){
+  console.error("Status update failed:",err);
+  out.textContent="Update failed. Check Firebase authentication and Firestore rules.";
+ }
+};
+
+function startApp(){
+ renderMenu();
+ renderCart(
