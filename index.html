@@ -129,7 +129,7 @@ a{color:#c2410c;overflow-wrap:anywhere}
 <section id="adminPage" class="page">  
 <h2>🔐 Owner Admin</h2>  
 <div class="panel">  
-<p class="small">Owner login requires Firebase Email/Password Authentication. Only the authorized owner account should be allowed to update order status.</p>  
+<p class="small">Owner login requires Firebase Authentication. Only the authorized owner account should be allowed to update order status.</p>  
 <div id="loginPanel">  
 <label for="adminEmail">Owner Email</label>  
 <input id="adminEmail" type="email" autocomplete="username" placeholder="Owner email">  
@@ -174,24 +174,7 @@ a{color:#c2410c;overflow-wrap:anywhere}
 Shree Chaat Corner • Chennai  
 </footer>  
 
-<script type="module">  
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";  
-import {  
- getFirestore,collection,doc,getDoc,setDoc,updateDoc,serverTimestamp  
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";  
-import {  
- getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged  
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";  
-  
-const firebaseConfig={  
- apiKey:"AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U",  
- authDomain:"shree-chaat-corner.firebaseapp.com",  
- projectId:"shree-chaat-corner",  
- storageBucket:"shree-chaat-corner.appspot.com",  
- messagingSenderId:"197160794283",  
- appId:"1:197160794283:web:48971b82bb1b42fdaf1fee"  
-};  
-  
+<script>  
 const SHOP_WHATSAPP="918428656328";  
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";  
 const ADMIN_URL=TRACK_URL+"?admin=1";  
@@ -224,18 +207,37 @@ const items=[
 ];  
   
 let db=null,auth=null;  
+let fsModule=null, authModule=null;  
 const cart={};  
 const $=id=>document.getElementById(id);  
 const money=n=>Math.round(Number(n)||0).toString();  
   
-try{  
- const app=initializeApp(firebaseConfig);  
- db=getFirestore(app);  
- auth=getAuth(app);  
-}catch(e){  
- console.error(e);  
- alert("Firebase could not initialize. Check your Firebase web configuration.");  
+// Safe dynamic Firebase loader so local file viewing won't break app buttons  
+async function initFirebase(){  
+ try{  
+  const {initializeApp} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");  
+  fsModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");  
+  authModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");  
+  
+  const firebaseConfig={  
+   apiKey:"AIzaSyA-Ca_4iUpLSc9MRY9W7xczhEvzQeZGa_U",  
+   authDomain:"shree-chaat-corner.firebaseapp.com",  
+   projectId:"shree-chaat-corner",  
+   storageBucket:"shree-chaat-corner.appspot.com",  
+   messagingSenderId:"197160794283",  
+   appId:"1:197160794283:web:48971b82bb1b42fdaf1fee"  
+  };  
+  
+  const app=initializeApp(firebaseConfig);  
+  db=fsModule.getFirestore(app);  
+  auth=authModule.getAuth(app);  
+  
+  authModule.onAuthStateChanged(auth,user=>updateAdminUI(user));  
+ }catch(e){  
+  console.log("Running in offline/local file mode. Local storage order history will be active.");  
+ }  
 }  
+initFirebase();  
   
 window.showPage=(id,btn)=>{  
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));  
@@ -374,18 +376,17 @@ window.placeOrder=async()=>{
  let orderId="SCC"+Date.now().toString().slice(-9);  
  let savedToFirebase=false;  
   
- if(db){  
+ if(db&&fsModule){  
   try{  
-   const orderRef=doc(collection(db,"orders"));  
+   const orderRef=fsModule.doc(fsModule.collection(db,"orders"));  
    orderId=orderRef.id;  
-   await setDoc(orderRef,{...order,createdAt:serverTimestamp()});  
-   await setDoc(doc(db,"orderStatus",orderId),{  
-    status:"Order Placed",updatedAt:serverTimestamp()  
+   await fsModule.setDoc(orderRef,{...order,createdAt:fsModule.serverTimestamp()});  
+   await fsModule.setDoc(fsModule.doc(db,"orderStatus",orderId),{  
+    status:"Order Placed",updatedAt:fsModule.serverTimestamp()  
    });  
    savedToFirebase=true;  
   }catch(err){  
    console.error("Order save failed:",err);  
-   alert("Firebase could not save this order. Tracking may not work until Firebase rules are fixed. WhatsApp will still open.");  
   }  
  }  
   
@@ -418,7 +419,6 @@ ${trackLink}
 OWNER ADMIN LINK (owner login required):  
 ${ADMIN_URL}  
   
-Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}  
 Please confirm this order and update its status in Owner Admin.`;  
   
  const wa="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);  
@@ -426,7 +426,6 @@ Please confirm this order and update its status in Owner Admin.`;
   
  alert("Order ID: "+orderId+  
  "\n\nCustomer tracking link:\n"+trackLink+  
- "\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+  
  "\n\nSend the order in WhatsApp to notify the shop.");  
   
  Object.keys(cart).forEach(k=>delete cart[k]);  
@@ -440,9 +439,9 @@ window.trackOrderLive=async()=>{
  const out=$("statusResult");  
  if(!id){out.textContent="Please enter your Order ID.";return;}  
  out.textContent="Checking status…";  
- if(db){  
+ if(db&&fsModule){  
   try{  
-   const snap=await getDoc(doc(db,"orderStatus",id));  
+   const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));  
    if(snap.exists()){  
     out.innerHTML=`<p>Order ID: <b>${id}</b></p><p>Current Status: <span class="status">${snap.data().status||"Order Placed"}</span></p><p class="small">Status is from Firebase.</p>`;  
     return;  
@@ -456,31 +455,31 @@ window.trackOrderLive=async()=>{
 };  
   
 function updateAdminUI(user){  
- $("loginPanel").style.display=user?"none":"block";  
- $("adminPanel").style.display=user?"block":"none";  
- $("ownerEmail").textContent=user?.email||"";  
-}  
-  
-if(auth){  
- onAuthStateChanged(auth,user=>updateAdminUI(user));  
+ if($("loginPanel")) $("loginPanel").style.display=user?"none":"block";  
+ if($("adminPanel")) $("adminPanel").style.display=user?"block":"none";  
+ if($("ownerEmail")) $("ownerEmail").textContent=user?.email||"";  
 }  
   
 window.ownerLogin=async()=>{  
  const email=$("adminEmail").value.trim();  
  const password=$("adminPassword").value;  
  if(!email||!password)return alert("Enter owner email and password.");  
+ if(!auth||!authModule)return alert("Firebase Auth is not available offline.");  
  try{  
-  await signInWithEmailAndPassword(auth,email,password);  
+  await authModule.signInWithEmailAndPassword(auth,email,password);  
   alert("Owner login successful.");  
  }catch(err){  
   console.error(err);  
-  alert("Login failed. Check the owner account and Firebase Authentication settings.");  
+  alert("Login failed. Check owner account details.");  
  }  
 };  
   
 window.ownerLogout=async()=>{  
- try{await signOut(auth);alert("Logged out.");}  
- catch(err){alert("Logout failed.");}  
+ try{  
+  if(auth&&authModule) await authModule.signOut(auth);  
+  alert("Logged out.");  
+  updateAdminUI(null);  
+ }catch(err){alert("Logout failed.");}  
 };  
   
 window.updateOrderStatus=async()=>{  
@@ -490,25 +489,23 @@ window.updateOrderStatus=async()=>{
  const out=$("adminResult");  
  if(!user){out.textContent="Please log in as owner first.";return;}  
  if(!id){out.textContent="Enter the full Order ID.";return;}  
- if(!db){out.textContent="Firebase is unavailable.";return;}  
+ if(!db||!fsModule){out.textContent="Firebase is unavailable.";return;}  
  out.textContent="Updating…";  
  try{  
-  const orderRef=doc(db,"orders",id);  
-  const snap=await getDoc(orderRef);  
+  const orderRef=fsModule.doc(db,"orders",id);  
+  const snap=await fsModule.getDoc(orderRef);  
   if(!snap.exists()){out.textContent="Order not found. Check the complete Order ID.";return;}  
-  await updateDoc(orderRef,{status,updatedAt:serverTimestamp()});  
-  await setDoc(doc(db,"orderStatus",id),{  
-   status,updatedAt:serverTimestamp()  
+  await fsModule.updateDoc(orderRef,{status,updatedAt:fsModule.serverTimestamp()});  
+  await fsModule.setDoc(fsModule.doc(db,"orderStatus",id),{  
+   status,updatedAt:fsModule.serverTimestamp()  
   });  
   out.textContent="Customer status updated successfully: "+status;  
  }catch(err){  
   console.error(err);  
-  out.textContent="Update failed. Check that your Firebase account is authorized and Firestore rules are correct.";  
+  out.textContent="Update failed. Check Firestore rules.";  
  }  
 };  
   
 const params=new URLSearchParams(location.search);  
 if(params.get("track")){  
- $("trackIdInput").value=params.get("track");  
- showPage("history");  
- trackOrderLi
+ $("trackIdInput").va
