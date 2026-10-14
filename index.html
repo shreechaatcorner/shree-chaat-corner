@@ -205,14 +205,14 @@ const items=[
 {id:5,n:"Sundal Chaat",p:40},  
 {id:6,n:"Pani Puri",p:30},  
 {id:7,n:"Dahi Puri",p:35},  
-{id:8,n:"Cheese Puri",p:65, extra: 5},  
-{id:9,n:"Sev Puri",p:45, extra: 5},  
-{id:10,n:"Veg Bread Sandwich",p:40, extra: 5},  
-{id:11,n:"Veg Bread Cheese Sandwich",p:50, extra: 5},  
-{id:12,n:"Murukku Sandwich",p:60, extra: 5},  
-{id:13,n:"Murukku Cheese Sandwich",p:70, extra: 5},  
-{id:14,n:"Khakhra Sandwich",p:70, extra: 5},  
-{id:15,n:"Khakhra Cheese Loaded Sandwich",p:90, extra: 5},  
+{id:8,n:"Cheese Puri",p:70},  
+{id:9,n:"Sev Puri",p:50},  
+{id:10,n:"Veg Bread Sandwich",p:45},  
+{id:11,n:"Veg Bread Cheese Sandwich",p:55},  
+{id:12,n:"Murukku Sandwich",p:65},  
+{id:13,n:"Murukku Cheese Sandwich",p:75},  
+{id:14,n:"Khakhra Sandwich",p:75},  
+{id:15,n:"Khakhra Cheese Loaded Sandwich",p:95},  
 {id:16,n:"Roti Sabji",p:30},  
 {id:17,n:"Triangle Paratha Sabji",p:40},  
 {id:18,n:"Methi Paratha Sabji",p:50},  
@@ -223,9 +223,6 @@ const items=[
 {id:23,n:"Cool Drink ₹10",p:10},  
 {id:24,n:"Cool Drink ₹20",p:20}  
 ];  
-
-// Helper function to get actual item price including extra charge per unit
-const getItemPrice = i => i.p + (i.extra || 0);
   
 let db=null,auth=null;  
 const cart={};  
@@ -270,13 +267,13 @@ function renderMenu(){
  <div class="card">  
   <div style="font-size:28px">🍽️</div>  
   <div class="item-name">${i.n}</div>  
-  <div class="price">₹${getItemPrice(i)}</div>  
+  <div class="price">₹${i.p}</div>  
   <div>${qtyButtons(i)}</div>  
  </div>`).join("");  
 }  
   
 function calc(){  
- const subtotal=items.reduce((s,i)=>s+getItemPrice(i)*(cart[i.id]||0),0);  
+ const subtotal=items.reduce((s,i)=>s+i.p*(cart[i.id]||0),0);  
  const delivery=$("orderType").value==="Home Delivery"  
   ? Math.max(0,Number($("distance").value)||0)*10 : 0;  
  return {subtotal,delivery,packing:PACKING_CHARGE,total:subtotal+delivery+PACKING_CHARGE};  
@@ -285,7 +282,7 @@ function calc(){
 function renderCart(){  
  const chosen=items.filter(i=>cart[i.id]>0),c=calc();  
  $("cart").innerHTML=chosen.length  
- ? chosen.map(i=>`<p>${i.n} × ${cart[i.id]} = ₹${getItemPrice(i)*cart[i.id]}</p>`).join("")  
+ ? chosen.map(i=>`<p>${i.n} × ${cart[i.id]} = ₹${i.p*cart[i.id]}</p>`).join("")  
  : "Cart is empty.";  
  $("grand").textContent=money(c.subtotal);  
  $("deliveryCharge").textContent=money(c.delivery);  
@@ -352,7 +349,7 @@ window.placeOrder=async()=>{
  if(type==="Home Delivery"&&(!Number.isFinite(Number($("distance").value))\vert{}\vert{}Number($("distance").value)<0))return alert("Enter a valid delivery distance.");  
   
  const c=calc();  
- const orderItems=chosen.map(i=>({id:i.id,name:i.n,price:getItemPrice(i),qty:cart[i.id]}));  
+ const orderItems=chosen.map(i=>({id:i.id,name:i.n,price:i.p,qty:cart[i.id]}));  
  const notes=$("notes").value.trim();  
  const order={  
   name,phone,type,address,  
@@ -503,4 +500,13 @@ if(params.get("track")){
  $("trackIdInput").value=params.get("track");  
  showPage("history");  
  trackOrderLive();  
-}else if(params.get("admin")==="1")
+}else if(params.get("admin")==="1"){  
+ showPage("adminPage");  
+}  
+  
+renderMenu();  
+renderCart();  
+renderHistory();  
+</script>  
+</body>  
+</html>
