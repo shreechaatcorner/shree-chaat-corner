@@ -271,7 +271,7 @@ function renderMenu(){
  </div>`).join("");  
 }  
   
-// Calculate packing charge: ₹5 extra per quantity for Cheese Puri, Sev Puri, and all Sandwiches (IDs 8 to 15)  
+// Packing charge calculation: ₹5 extra per quantity for Cheese Puri, Sev Puri, and all Sandwiches (IDs 8 to 15)  
 function getPackingCharge(){  
  let packing=0;  
  items.forEach(i=>{  
@@ -511,4 +511,4 @@ const params=new URLSearchParams(location.search);
 if(params.get("track")){  
  $("trackIdInput").value=params.get("track");  
  showPage("history");  
- trackOrderLive
+ trackOrderLi
