@@ -98,11 +98,16 @@ a{color:#c2410c;overflow-wrap:anywhere}
 <div id="deliveryFields" style="display:none">
 <label for="customerAddress">Delivery Address *</label>
 <textarea id="customerAddress" placeholder="House number, street, area"></textarea>
+
 <button class="btn green" onclick="getLocation()">📍 Use Current Location</button>
+<button class="btn" onclick="calculateDistanceFromAddress()">Calculate Distance from Address</button>
+
 <div id="locStatus" class="small"></div>
-<label for="distance">Distance from shop (km) *</label>
-<input id="distance" type="number" min="0" step="0.1" value="1" oninput="renderCart()">
-<p class="small">Delivery charge: ₹10 per km. Enter the distance manually.</p>
+
+<label for="distance">Calculated Road Distance (km)</label>
+<input id="distance" type="number" min="0" step="0.1" placeholder="Calculate distance first" readonly>
+
+<p class="small">Delivery charge: ₹10 per km. Use GPS or enter a complete delivery address and tap Calculate Distance. Road distance depends on route service availability.</p>
 </div>
 
 <label for="notes">Order Notes (optional)</label>
@@ -181,9 +186,18 @@ Shree Chaat Corner • Chennai
 const SHOP_WHATSAPP="918428656328";
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";
 const ADMIN_URL=TRACK_URL+"?admin=1";
-
+const SHOP_ADDRESS="No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar, Tirvottiyur, Chennai 600019";
+const DELIVERY_PER_KM=10;
 const PACKING_PER_QTY=5;
 const PACKING_ITEM_IDS=[8,9,10,11,12,13,14,15];
+
+let shopCoords=null;
+let customerCoords=null;
+let db=null,auth=null;
+let fsModule=null,authModule=null;
+const cart={};
+const $=id=>document.getElementById(id);
+const money=n=>Math.round(Number(n)||0).toString();
 
 const items=[
 {id:1,n:"Samosa",p:15},
@@ -211,12 +225,6 @@ const items=[
 {id:23,n:"Cool Drink ₹10",p:10},
 {id:24,n:"Cool Drink ₹20",p:20}
 ];
-
-let db=null,auth=null;
-let fsModule=null,authModule=null;
-const cart={};
-const $=id=>document.getElementById(id);
-const money=n=>Math.round(Number(n)||0).toString();
 
 async function initFirebase(){
  try{
@@ -278,17 +286,17 @@ function renderMenu(){
 }
 
 function getPackingCharge(){
- return items.reduce((sum,i)=>{
-  return sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0);
- },0);
+ return items.reduce((sum,i)=>
+  sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0),0);
 }
 
 function calc(){
  const subtotal=items.reduce((sum,i)=>sum+i.p*(cart[i.id]||0),0);
  const packing=getPackingCharge();
  const distance=Number($("distance").value);
- const delivery=$("orderType").value==="Home Delivery"
-  ? Math.max(0,Number.isFinite(distance)?distance:0)*10
+ const validDistance=$("distance").value.trim()!==""&&Number.isFinite(distance)&&distance>0;
+ const delivery=$("orderType").value==="Home Delivery"&&validDistance
+  ? Math.round(distance*DELIVERY_PER_KM)
   : 0;
  return {subtotal,delivery,packing,total:subtotal+delivery+packing};
 }
@@ -311,7 +319,6 @@ function renderCart(){
  $("packingCharge").textContent=money(c.packing);
  $("finalTotal").textContent=money(c.total);
 }
-
 window.renderCart=renderCart;
 
 window.changeQty=(id,delta)=>{
@@ -326,17 +333,85 @@ window.toggleDelivery=()=>{
  renderCart();
 };
 
+async function geocodeAddress(address){
+ const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(address);
+ const response=await fetch(url,{headers:{"Accept":"application/json"}});
+ if(!response.ok)throw new Error("Address lookup service unavailable.");
+ const results=await response.json();
+ if(!results.length)throw new Error("Address not found. Please enter a more complete address.");
+ return {lat:Number(results[0].lat),lon:Number(results[0].lon)};
+}
+
+async function getShopCoords(){
+ if(shopCoords)return shopCoords;
+ shopCoords=await geocodeAddress(SHOP_ADDRESS);
+ return shopCoords;
+}
+
+async function getRoadDistance(origin){
+ const shop=await getShopCoords();
+ const url=`https://router.project-osrm.org/route/v1/driving/${shop.lon},${shop.lat};${origin.lon},${origin.lat}?overview=false`;
+ const response=await fetch(url);
+ if(!response.ok)throw new Error("Road route service unavailable.");
+ const data=await response.json();
+ if(data.code!=="Ok"||!data.routes||!data.routes.length)
+  throw new Error("Road route could not be found for this location.");
+ return data.routes[0].distance/1000;
+}
+
+async function setCalculatedDistance(coords){
+ const status=$("locStatus");
+ const distanceInput=$("distance");
+ status.textContent="Calculating road distance…";
+ distanceInput.value="";
+ renderCart();
+
+ try{
+  const km=await getRoadDistance(coords);
+  customerCoords=coords;
+  distanceInput.value=km.toFixed(1);
+  status.textContent=`Road distance calculated: ${km.toFixed(1)} km. Delivery charge: ₹${money(km*DELIVERY_PER_KM)}.`;
+  renderCart();
+ }catch(err){
+  console.error(err);
+  status.textContent=err.message||"Distance calculation failed. Try again or enter a more complete address.";
+  distanceInput.value="";
+  renderCart();
+ }
+}
+
 window.getLocation=()=>{
  const status=$("locStatus");
- if(!navigator.geolocation){status.textContent="Location is not supported.";return;}
- status.textContent="Finding location…";
- navigator.geolocation.getCurrentPosition(pos=>{
-  const {latitude,longitude}=pos.coords;
-  $("customerAddress").value=`https://maps.google.com/?q=${latitude},${longitude}`;
-  status.textContent="Location added. Please also enter your house and street details.";
+ if(!navigator.geolocation){
+  status.textContent="Location is not supported by this browser.";
+  return;
+ }
+ status.textContent="Getting your current location…";
+ navigator.geolocation.getCurrentPosition(async pos=>{
+  const coords={lat:pos.coords.latitude,lon:pos.coords.longitude};
+  const mapLink=`https://maps.google.com/?q=${coords.lat},${coords.lon}`;
+  const address=$("customerAddress");
+  if(!address.value.trim())address.value="Delivery location: "+mapLink;
+  else if(!address.value.includes(mapLink))address.value=address.value.trim()+"\nGPS location: "+mapLink;
+  await setCalculatedDistance(coords);
  },()=>{
-  status.textContent="Location unavailable. Allow location permission and try again.";
- },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+  status.textContent="Location unavailable. Allow location permission or enter your full address and calculate distance.";
+ },{enableHighAccuracy:true,timeout:15000,maximumAge:60000});
+};
+
+window.calculateDistanceFromAddress=async()=>{
+ const address=$("customerAddress").value.trim();
+ if(!address)return alert("Please enter your complete delivery address first.");
+ $("locStatus").textContent="Finding address…";
+ $("distance").value="";
+ renderCart();
+ try{
+  const coords=await geocodeAddress(address);
+  await setCalculatedDistance(coords);
+ }catch(err){
+  console.error(err);
+  $("locStatus").textContent=err.message||"Address lookup failed. Please check the address and try again.";
+ }
 };
 
 function localOrders(){
@@ -374,7 +449,8 @@ window.placeOrder=async()=>{
  if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Enter a valid mobile number.");
  if(!chosen.length)return alert("Your cart is empty.");
  if(type==="Home Delivery"&&!address)return alert("Enter your delivery address.");
- if(type==="Home Delivery"&&(!Number.isFinite(distance)||distance<0))return alert("Enter a valid delivery distance.");
+ if(type==="Home Delivery"&&(!$("distance").value.trim()||!Number.isFinite(distance)||distance<=0))
+  return alert("Please calculate the delivery distance before placing the order.");
 
  const c=calc();
  const orderItems=chosen.map(i=>{
@@ -387,6 +463,7 @@ window.placeOrder=async()=>{
  const order={
   name,phone,type,address,
   distance:type==="Home Delivery"?distance:0,
+  locationLink:customerCoords?`https://maps.google.com/?q=${customerCoords.lat},${customerCoords.lon}`:"",
   items:orderItems,subtotal:c.subtotal,delivery:c.delivery,
   packing:c.packing,total:c.total,notes,status:"Order Placed",
   createdAt:new Date().toISOString()
@@ -427,7 +504,8 @@ Name: ${name}
 Mobile: ${phone}
 Order Type: ${type}
 ${address?"Address: "+address:""}
-${type==="Home Delivery"?"Distance: "+order.distance+" km":""}
+${order.locationLink?"Customer GPS: "+order.locationLink:""}
+${type==="Home Delivery"?"Road Distance: "+order.distance+" km":""}
 
 ${lines}
 
@@ -456,101 +534,4 @@ Please confirm this order and update its status in Owner Admin.`;
 
  Object.keys(cart).forEach(k=>delete cart[k]);
  renderMenu();
- renderCart();
- renderHistory();
- $("trackIdInput").value=orderId;
- showPage("history");
-};
-
-window.trackOrderLive=async()=>{
- const id=$("trackIdInput").value.trim();
- const out=$("statusResult");
- if(!id){out.textContent="Please enter your Order ID.";return;}
- out.textContent="Checking status…";
-
- if(db&&fsModule){
-  try{
-   const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));
-   if(snap.exists()){
-    out.innerHTML=`<p>Order ID: <b>${id}</b></p><p>Current Status: <span class="status">${snap.data().status||"Order Placed"}</span></p><p class="small">Status is from Firebase.</p>`;
-    return;
-   }
-  }catch(err){console.error(err);}
- }
-
- const local=localOrders().find(o=>o.id===id);
- out.textContent=local
-  ?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update."
-  :"Order not found or Firebase tracking is not configured. Check the complete Order ID.";
-};
-
-function updateAdminUI(user){
- if($("loginPanel"))$("loginPanel").style.display=user?"none":"block";
- if($("adminPanel"))$("adminPanel").style.display=user?"block":"none";
- if($("ownerEmail"))$("ownerEmail").textContent=user?.email||"";
-}
-
-window.ownerLogin=async()=>{
- const email=$("adminEmail").value.trim();
- const password=$("adminPassword").value;
- if(!email||!password)return alert("Enter owner email and password.");
- if(!auth||!authModule)return alert("Firebase Auth is not available. Check your internet connection.");
- try{
-  await authModule.signInWithEmailAndPassword(auth,email,password);
-  alert("Owner login successful.");
- }catch(err){
-  console.error(err);
-  alert("Login failed. Check owner account details and Firebase Authentication settings.");
- }
-};
-
-window.ownerLogout=async()=>{
- try{
-  if(auth&&authModule)await authModule.signOut(auth);
-  updateAdminUI(null);
-  alert("Logged out.");
- }catch(err){alert("Logout failed.");}
-};
-
-window.updateOrderStatus=async()=>{
- const user=auth?.currentUser;
- const id=$("adminOrderId").value.trim();
- const status=$("newStatus").value;
- const out=$("adminResult");
-
- if(!user){out.textContent="Please log in as owner first.";return;}
- if(!id){out.textContent="Enter the full Order ID.";return;}
- if(!db||!fsModule){out.textContent="Firebase is unavailable.";return;}
-
- out.textContent="Updating…";
- try{
-  const orderRef=fsModule.doc(db,"orders",id);
-  const snap=await fsModule.getDoc(orderRef);
-  if(!snap.exists()){out.textContent="Order not found. Check the complete Order ID.";return;}
-
-  await fsModule.updateDoc(orderRef,{status,updatedAt:fsModule.serverTimestamp()});
-  await fsModule.setDoc(fsModule.doc(db,"orderStatus",id),{
-   status,updatedAt:fsModule.serverTimestamp()
-  });
-  out.textContent="Customer status updated successfully: "+status;
- }catch(err){
-  console.error(err);
-  out.textContent="Update failed. Check Firebase authentication and Firestore rules.";
- }
-};
-
-const params=new URLSearchParams(location.search);
-if(params.get("track")){
- $("trackIdInput").value=params.get("track");
- showPage("history");
- trackOrderLive();
-}else if(params.get("admin")==="1"){
- showPage("adminPage");
-}
-
-renderMenu();
-renderCart();
-renderHistory();
-</script>
-</body>
-</html>
+ ren
