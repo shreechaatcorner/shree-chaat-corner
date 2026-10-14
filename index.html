@@ -249,4 +249,257 @@ function renderMenu(){
 }  
   
 function calc(){
- const subtotal 
+ const subtotal = items.reduce(
+  (s, i) => s + i.p * (cart[i.id] || 0), 0
+ );
+
+ const delivery = $("orderType").value === "Home Delivery"
+  ? Math.max(0, Number($("distance").value) || 0) * 10
+  : 0;
+
+ const packing = items.reduce((sum, i) => {
+  if (PACKING_ITEM_IDS.includes(i.id)) {
+   return sum + (cart[i.id] || 0) * PACKING_PER_QTY;
+  }
+  return sum;
+ }, 0);
+
+ return {
+  subtotal,
+  delivery,
+  packing,
+  total: subtotal + delivery + packing
+ };
+}  
+  
+function renderCart(){  
+ const chosen=items.filter(i=>cart[i.id]>0),c=calc();  
+ $("cart").innerHTML=chosen.length  
+ ? chosen.map(i => {
+  const qty = cart[i.id];
+  const itemTotal = i.p * qty;
+  const packing = PACKING_ITEM_IDS.includes(i.id)
+    ? qty * PACKING_PER_QTY
+    : 0;
+
+  return `<p>
+    ${i.n} × ${qty} = ₹${itemTotal}
+    ${packing > 0 ? `<br><span class="small">Packing: ₹${packing}</span>` : ""}
+  </p>`;
+ }).join("")  
+ : "Cart is empty.";  
+ $("grand").textContent=money(c.subtotal);  
+ $("deliveryCharge").textContent=money(c.delivery);  
+ $("packingCharge").textContent=money(c.packing);  
+ $("finalTotal").textContent=money(c.total);  
+}  
+  
+window.changeQty=(id,delta)=>{  
+ cart[id]=Math.max(0,(cart[id]||0)+delta);  
+ if(!cart[id])delete cart[id];  
+ renderMenu();renderCart();  
+};  
+  
+window.toggleDelivery=()=>{  
+ $("deliveryFields").style.display=$("orderType").value==="Home Delivery"?"block":"none";  
+ renderCart();  
+};  
+  
+window.getLocation=()=>{  
+ const status=$("locStatus");  
+ if(!navigator.geolocation){status.textContent="Location is not supported.";return;}  
+ status.textContent="Finding location…";  
+ navigator.geolocation.getCurrentPosition(pos=>{  
+  const {latitude,longitude}=pos.coords;  
+  $("customerAddress").value=`https://maps.google.com/?q=${latitude},${longitude}`;  
+  status.textContent="Location added. Please also enter your house and street details.";  
+ },()=>{  
+  status.textContent="Location unavailable. Allow location permission and try again.";  
+ },{enableHighAccuracy:true,timeout:10000,maximumAge:60000});  
+};  
+  
+function localOrders(){  
+ try{return JSON.parse(localStorage.getItem("scc_orders")||"[]");}  
+ catch(e){return [];}  
+}  
+function saveLocal(o){  
+ const arr=localOrders();  
+ arr.unshift(o);  
+ localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)));  
+}  
+function renderHistory(){  
+ const arr=localOrders();  
+ $("historyList").innerHTML=arr.length?arr.map(o=>`  
+ <div class="card">  
+ <b>Order ID:</b> ${o.id}<br>  
+ <b>Total:</b> ₹${money(o.total)}<br>  
+ <b>Status:</b> <span class="status">${o.status||"Order Placed"}</span><br>  
+ <span class="small">${o.date||""}</span><br>  
+ <button class="btn" onclick="document.getElementById('trackIdInput').value='${o.id}';trackOrderLive()">Track</button>  
+ </div>`).join(""):"No orders on this device yet.";  
+}  
+  
+window.placeOrder=async()=>{  
+ const name=$("customer").value.trim();  
+ const phone=$("phone").value.trim();  
+ const type=$("orderType").value;  
+ const address=$("customerAddress").value.trim();  
+ const chosen=items.filter(i=>cart[i.id]>0);  
+  
+ if(!name||!phone)return alert("Enter your name and mobile number.");  
+ if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Enter a valid mobile number.");  
+ if(!chosen.length)return alert("Your cart is empty.");  
+ if(type==="Home Delivery"&&!address)return alert("Enter your delivery address.");  
+ if(type==="Home Delivery"&&(!Number.isFinite(Number($("distance").value))||Number($("distance").value)<0))return alert("Enter a valid delivery distance.");  
+  
+ const c=calc();  
+ const orderItems=chosen.map(i=>({id:i.id,name:i.n,price:i.p,qty:cart[i.id]}));  
+ const notes=$("notes").value.trim();  
+ const order={  
+  name,phone,type,address,  
+  distance:type==="Home Delivery"?(Number($("distance").value)||0):0,  
+  items:orderItems,subtotal:c.subtotal,delivery:c.delivery,  
+  packing:c.packing,total:c.total,notes,status:"Order Placed",  
+  createdAt:new Date().toISOString()  
+ };  
+  
+ let orderId="SCC"+Date.now().toString().slice(-9);  
+ let savedToFirebase=false;  
+  
+ if(db){  
+  try{  
+   const orderRef=doc(collection(db,"orders"));  
+   orderId=orderRef.id;  
+   await setDoc(orderRef,{...order,createdAt:serverTimestamp()});  
+   await setDoc(doc(db,"orderStatus",orderId),{  
+    status:"Order Placed",updatedAt:serverTimestamp()  
+   });  
+   savedToFirebase=true;  
+  }catch(err){  
+   console.error("Order save failed:",err);  
+   alert("Firebase could not save this order. Tracking may not work until Firebase rules are fixed. WhatsApp will still open.");  
+  }  
+ }  
+  
+ order.id=orderId;  
+ order.date=new Date().toLocaleString();  
+ saveLocal(order);  
+  
+ const trackLink=TRACK_URL+"?track="+encodeURIComponent(orderId);  
+ const lines = orderItems.map(i => {
+ const packing = PACKING_ITEM_IDS.includes(i.id)
+  ? i.qty * PACKING_PER_QTY
+  : 0;
+
+ return `${i.name} x ${i.qty} = Rs.${i.price * i.qty}` +
+  (packing ? ` + Packing Rs.${packing}` : "");
+}).join("\n");  
+ const message=  
+`SHREE CHAAT CORNER ORDER  
+Order ID: ${orderId}  
+Name: ${name}  
+Mobile: ${phone}  
+Order Type: ${type}  
+${address?"Address: "+address:""}  
+${type==="Home Delivery"?"Distance: "+order.distance+" km":""}  
+  
+${lines}  
+  
+Items Total: Rs.${c.subtotal}  
+Delivery: Rs.${c.delivery}  
+Packing: Rs.${c.packing}  
+TOTAL: Rs.${c.total}  
+${notes?"Notes: "+notes:""}  
+  
+CUSTOMER TRACKING LINK:  
+${trackLink}  
+  
+OWNER ADMIN LINK (owner login required):  
+${ADMIN_URL}  
+  
+Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}  
+Please confirm this order and update its status in Owner Admin.`;  
+  
+ const wa="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);  
+ window.open(wa,"_blank");  
+  
+ alert("Order ID: "+orderId+  
+ "\n\nCustomer tracking link:\n"+trackLink+  
+ "\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+  
+ "\n\nSend the order in WhatsApp to notify the shop.");  
+  
+ Object.keys(cart).forEach(k=>delete cart[k]);  
+ renderMenu();renderCart();renderHistory();  
+ $("trackIdInput").value=orderId;  
+ showPage("history");  
+};  
+  
+window.trackOrderLive=async()=>{  
+ const id=$("trackIdInput").value.trim();  
+ const out=$("statusResult");  
+ if(!id){out.textContent="Please enter your Order ID.";return;}  
+ out.textContent="Checking status…";  
+ if(db){  
+  try{  
+   const snap=await getDoc(doc(db,"orderStatus",id));  
+   if(snap.exists()){  
+    out.innerHTML=`<p>Order ID: <b>${id}</b></p><p>Current Status: <span class="status">${snap.data().status||"Order Placed"}</span></p><p class="small">Status is from Firebase.</p>`;  
+    return;  
+   }  
+  }catch(err){console.error(err);}  
+ }  
+ const local=localOrders().find(o=>o.id===id);  
+ out.textContent=local  
+  ?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update."  
+  :"Order not found or Firebase tracking is not configured. Check the complete Order ID.";  
+};  
+  
+function updateAdminUI(user){  
+ $("loginPanel").style.display=user?"none":"block";  
+ $("adminPanel").style.display=user?"block":"none";  
+ $("ownerEmail").textContent=user?.email||"";  
+}  
+  
+if(auth){  
+ onAuthStateChanged(auth,user=>updateAdminUI(user));  
+}  
+  
+window.ownerLogin=async()=>{  
+ const email=$("adminEmail").value.trim();  
+ const password=$("adminPassword").value;  
+ if(!email||!password)return alert("Enter owner email and password.");  
+ try{  
+  await signInWithEmailAndPassword(auth,email,password);  
+  alert("Owner login successful.");  
+ }catch(err){  
+  console.error(err);  
+  alert("Login failed. Check the owner account and Firebase Authentication settings.");  
+ }  
+};  
+  
+window.ownerLogout=async()=>{  
+ try{await signOut(auth);alert("Logged out.");}  
+ catch(err){alert("Logout failed.");}  
+};  
+  
+window.updateOrderStatus=async()=>{  
+ const user=auth?.currentUser;  
+ const id=$("adminOrderId").value.trim();  
+ const status=$("newStatus").value;  
+ const out=$("adminResult");  
+ if(!user){out.textContent="Please log in as owner first.";return;}  
+ if(!id){out.textContent="Enter the full Order ID.";return;}  
+ if(!db){out.textContent="Firebase is unavailable.";return;}  
+ out.textContent="Updating…";  
+ try{  
+  const orderRef=doc(db,"orders",id);  
+  const snap=await getDoc(orderRef);  
+  if(!snap.exists()){out.textContent="Order not found. Check the complete Order ID.";return;}  
+  await updateDoc(orderRef,{status,updatedAt:serverTimestamp()});  
+  await setDoc(doc(db,"orderStatus",id),{  
+   status,updatedAt:serverTimestamp()  
+  });  
+  out.textContent="Customer status updated successfully: "+status;  
+ }catch(err){  
+  console.error(err);  
+  out.tex
