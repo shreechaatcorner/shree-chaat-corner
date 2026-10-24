@@ -145,4 +145,131 @@ function loadMenuFromOwner(){
   if(!data||typeof data!=="object"){
    items=[...fallbackItems];
    $("menuSyncStatus").textContent="Owner menu not yet imported. Showing default menu.";
-   renderMenu();r
+   renderMenu();renderCart();return;
+  }
+  const keys=Object.keys(data).sort((a,b)=>Number((a.match(/\d+$/)||[])[0]||999)-Number((b.match(/\d+$/)||[])[0]||999));
+  const newItems=keys.map((key,index)=>{
+   const raw=data[key]||{},fallback=fallbackItems[index];
+   return {id:index+1,key,n:String(raw.name||fallback?.n||"Menu Item"),p:Number.isFinite(Number(raw.price))?Number(raw.price):(fallback?.p||0),available:raw.available!==false,emoji:raw.emoji||fallback?.emoji||"🍽️",photoUrl:typeof raw.photoUrl==="string"?raw.photoUrl:""};
+  });
+  items=newItems.filter(i=>i.available);
+  $("menuSyncStatus").textContent=items.length?"Menu synced from Owner App.":"All menu items are currently unavailable.";
+  const activeIds=new Set(items.map(i=>i.id));
+  Object.keys(cart).forEach(id=>{if(!activeIds.has(Number(id)))delete cart[id];});
+  renderMenu();renderCart();
+ },error=>{
+  console.error("Menu sync failed:",error);
+  $("menuSyncStatus").textContent="Menu sync failed. Showing default menu.";
+  items=[...fallbackItems];renderMenu();renderCart();
+ });
+}
+initFirebase();
+
+window.showPage=(id,btn)=>{
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ if($(id))$(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+ if(id==="history")renderHistory();
+ if(id==="adminPage")updateAdminUI(auth?.currentUser||null);
+};
+window.openTracking=(btn)=>{
+ showPage("history",btn);
+ const orderId=new URLSearchParams(location.search).get("track");
+ if(orderId)$("trackIdInput").value=orderId;
+ if(orderId)trackOrderLive();
+};
+const qtyButtons=i=>{const q=cart[i.id]||0;return q?`<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${q} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`:`<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`;};
+function renderMenu(){
+ $("menu").innerHTML=items.map(i=>`<div class="card">${i.photoUrl?`<img class="menu-photo" src="${escapeHtml(i.photoUrl)}" alt="${escapeHtml(i.n)}" loading="lazy">`:`<div style="font-size:28px">${escapeHtml(i.emoji||"🍽️")}</div>`}<div class="item-name">${escapeHtml(i.n)}</div><div class="price">₹${money(i.p)}${PACKING_ITEM_IDS.includes(i.id)?" + ₹5 packing per quantity":""}</div><div>${qtyButtons(i)}</div></div>`).join("");
+}
+function getPackingCharge(){return items.reduce((sum,i)=>sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0),0);}
+function calc(){
+ const subtotal=items.reduce((sum,i)=>sum+i.p*(cart[i.id]||0),0),packing=getPackingCharge(),distance=Number($("distance").value);
+ const delivery=$("orderType").value==="Home Delivery"?Math.max(0,Number.isFinite(distance)?distance:0)*10:0;
+ return {subtotal,delivery,packing,total:subtotal+delivery+packing};
+}
+function renderCart(){
+ const chosen=items.filter(i=>cart[i.id]>0),c=calc();
+ $("cart").innerHTML=chosen.length?chosen.map(i=>{const qty=cart[i.id],packing=PACKING_ITEM_IDS.includes(i.id)?qty*PACKING_PER_QTY:0;return `<p><b>${escapeHtml(i.n)} × ${qty} = ₹${money(i.p*qty)}</b>${packing?`<br><span class="small">Packing: ₹${money(packing)}</span>`:""}</p>`;}).join(""):"Cart is empty.";
+ $("grand").textContent=money(c.subtotal);$("deliveryCharge").textContent=money(c.delivery);$("packingCharge").textContent=money(c.packing);$("finalTotal").textContent=money(c.total);
+}
+window.renderCart=renderCart;
+window.changeQty=(id,delta)=>{cart[id]=Math.max(0,(cart[id]||0)+delta);if(!cart[id])delete cart[id];renderMenu();renderCart();};
+window.toggleDelivery=()=>{$("deliveryFields").style.display=$("orderType").value==="Home Delivery"?"block":"none";renderCart();};
+window.getLocation=()=>{
+ const status=$("locStatus");if(!navigator.geolocation){status.textContent="Location is not supported.";return;}
+ status.textContent="Finding location…";
+ navigator.geolocation.getCurrentPosition(pos=>{const {latitude,longitude}=pos.coords;$("customerAddress").value=`https://maps.google.com/?q=${latitude},${longitude}`;status.textContent="Location added. Please also enter your house and street details.";},()=>{status.textContent="Location unavailable. Allow location permission and try again."},{enableHighAccuracy:true,timeout:10000,maximumAge:60000});
+};
+function localOrders(){try{return JSON.parse(localStorage.getItem("scc_orders")||"[]");}catch(e){return [];}}
+function saveLocal(o){const arr=localOrders();arr.unshift(o);localStorage.setItem("scc_orders",JSON.stringify(arr.slice(0,30)));}
+function renderHistory(){
+ const arr=localOrders();
+ $("historyList").innerHTML=arr.length?arr.map(o=>`<div class="card"><b>Order ID:</b> ${escapeHtml(o.id)}<br><b>Total:</b> ₹${money(o.total)}<br><b>Status:</b> <span class="status">${escapeHtml(o.status||"Order Placed")}</span><br><span class="small">${escapeHtml(o.date||"")}</span><br><button class="btn" onclick="document.getElementById('trackIdInput').value='${escapeHtml(o.id)}';trackOrderLive()">Track</button></div>`).join(""):"No orders on this device yet.";
+}
+window.placeOrder=async()=>{
+ const name=$("customer").value.trim(),phone=$("phone").value.trim(),type=$("orderType").value,address=$("customerAddress").value.trim(),chosen=items.filter(i=>cart[i.id]>0),distance=Number($("distance").value);
+ if(!name||!phone)return alert("Enter your name and mobile number.");
+ if(!/^[0-9+\-\s()]{10,18}$/.test(phone))return alert("Enter a valid mobile number.");
+ if(!chosen.length)return alert("Your cart is empty.");
+ if(type==="Home Delivery"&&!address)return alert("Enter your delivery address.");
+ if(type==="Home Delivery"&&(!Number.isFinite(distance)||distance<0))return alert("Enter a valid delivery distance.");
+ const c=calc(),orderItems=chosen.map(i=>{const qty=cart[i.id],packing=PACKING_ITEM_IDS.includes(i.id)?qty*PACKING_PER_QTY:0;return {id:i.id,name:i.n,price:i.p,qty,packing};}),notes=$("notes").value.trim();
+ const order={name,phone,type,address,distance:type==="Home Delivery"?distance:0,items:orderItems,subtotal:c.subtotal,delivery:c.delivery,packing:c.packing,total:c.total,notes,status:"Order Placed",createdAt:new Date().toISOString()};
+ let orderId="SCC"+Date.now().toString().slice(-9),savedToFirebase=false;
+ if(db&&fsModule){try{const orderRef=fsModule.doc(fsModule.collection(db,"orders"));orderId=orderRef.id;await fsModule.setDoc(orderRef,{...order,createdAt:fsModule.serverTimestamp()});await fsModule.setDoc(fsModule.doc(db,"orderStatus",orderId),{status:"Order Placed",updatedAt:fsModule.serverTimestamp()});savedToFirebase=true;}catch(err){console.error("Order save failed:",err);alert("Firebase could not save this order. WhatsApp will still open, but live tracking may not work.");}}
+ order.id=orderId;order.date=new Date().toLocaleString();saveLocal(order);
+ const trackLink=TRACK_URL+"?track="+encodeURIComponent(orderId),lines=orderItems.map(i=>`${i.name} x ${i.qty} = Rs.${i.price*i.qty}`+(i.packing?` + Packing Rs.${i.packing}`:"")).join("\n");
+ const message=`SHREE CHAAT CORNER ORDER
+Order ID: ${orderId}
+Name: ${name}
+Mobile: ${phone}
+Order Type: ${type}
+${address?"Address: "+address:""}
+${type==="Home Delivery"?"Distance: "+order.distance+" km":""}
+
+${lines}
+
+Items Total: Rs.${c.subtotal}
+Delivery: Rs.${c.delivery}
+Packing: Rs.${c.packing}
+TOTAL: Rs.${c.total}
+${notes?"Notes: "+notes:""}
+
+CUSTOMER TRACKING LINK:
+${trackLink}
+
+OWNER ADMIN LINK (owner login required):
+${ADMIN_URL}
+
+Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}
+Please confirm this order and update its status in Owner Admin.`;
+ window.open("https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message),"_blank");
+ alert("Order ID: "+orderId+"\n\nCustomer tracking link:\n"+trackLink+"\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+"\n\nSend the order in WhatsApp to notify the shop.");
+ Object.keys(cart).forEach(k=>delete cart[k]);renderMenu();renderCart();renderHistory();$("trackIdInput").value=orderId;showPage("history");
+};
+window.trackOrderLive=async()=>{
+ const id=$("trackIdInput").value.trim(),out=$("statusResult");if(!id){out.textContent="Please enter your Order ID.";return;}out.textContent="Checking status…";
+ if(db&&fsModule){try{const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));if(snap.exists()){out.innerHTML=`<p>Order ID: <b>${escapeHtml(id)}</b></p><p>Current Status: <span class="status">${escapeHtml(snap.data().status||"Order Placed")}</span></p><p class="small">Status is from Firebase.</p>`;return;}}catch(err){console.error(err);}}
+ const local=localOrders().find(o=>o.id===id);
+ out.textContent=local?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update.":"Order not found or Firebase tracking is not configured. Check the complete Order ID.";
+};
+function updateAdminUI(user){if($("loginPanel"))$("loginPanel").style.display=user?"none":"block";if($("adminPanel"))$("adminPanel").style.display=user?"block":"none";if($("ownerEmail"))$("ownerEmail").textContent=user?.email||"";}
+window.ownerLogin=async()=>{
+ const email=$("adminEmail").value.trim(),password=$("adminPassword").value;if(!email||!password)return alert("Enter owner email and password.");if(!auth||!authModule)return alert("Firebase Auth is not available. Check your internet connection.");
+ try{await authModule.signInWithEmailAndPassword(auth,email,password);alert("Owner login successful.");}catch(err){console.error(err);alert("Login failed. Check owner account details and Firebase Authentication settings.");}
+};
+window.ownerLogout=async()=>{try{if(auth&&authModule)await authModule.signOut(auth);updateAdminUI(null);alert("Logged out.");}catch(err){alert("Logout failed.");}};
+window.updateOrderStatus=async()=>{
+ const user=auth?.currentUser,id=$("adminOrderId").value.trim(),status=$("newStatus").value,out=$("adminResult");
+ if(!user){out.textContent="Please log in as owner first.";return;}if(!id){out.textContent="Enter the full Order ID.";return;}if(!db||!fsModule){out.textContent="Firebase is unavailable.";return;}out.textContent="Updating…";
+ try{const orderRef=fsModule.doc(db,"orders",id),snap=await fsModule.getDoc(orderRef);if(!snap.exists()){out.textContent="Order not found. Check the complete Order ID.";return;}await fsModule.updateDoc(orderRef,{status,updatedAt:fsModule.serverTimestamp()});await fsModule.setDoc(fsModule.doc(db,"orderStatus",id),{status,updatedAt:fsModule.serverTimestamp()});out.textContent="Customer status updated successfully: "+status;}catch(err){console.error(err);out.textContent="Update failed. Check Firebase authentication and Firestore rules.";}
+};
+const params=new URLSearchParams(location.search);
+if(params.get("track")){$("trackIdInput").value=params.get("track");showPage("history");}
+else if(params.get("admin")==="1"){showPage("adminPage");}
+renderMenu();renderCart();renderHistory();
+</script>
+</body>
+</html>
