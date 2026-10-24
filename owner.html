@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#176b3a">
+<title>Shree Chaat Corner — Owner App</title>
+<style>
+:root{--g:#176b3a;--o:#f28c28;--bg:#f5f7f2;--ink:#202820;--line:#e1e7de;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px Arial,sans-serif}
+header{background:linear-gradient(135deg,#176b3a,#0d4c29);color:#fff;padding:18px 16px}
+.wrap{max-width:1000px;margin:auto;padding:0 14px}h1{font-size:22px;margin:0}header p{margin:6px 0 0;color:#e4f4e8;font-size:13px}
+main{padding:16px 0 40px}.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:15px;margin-bottom:13px;box-shadow:0 2px 8px #00000006}
+h2{font-size:18px;margin:0 0 12px}.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+label{font-size:12px;font-weight:bold;display:block;margin:9px 0 5px}
+input,select,textarea{font:inherit;width:100%;padding:11px;border:1px solid #ccd7cc;border-radius:9px;background:white}
+button{font:inherit;border:0;border-radius:9px;padding:10px 12px;cursor:pointer;font-weight:bold}
+.primary{background:var(--g);color:#fff}.secondary{background:#fff0d9;color:#704000}.danger{background:#fee4e2;color:var(--red)}.muted{font-size:12px;color:#647064;line-height:1.5}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.tab{background:#e8eee7;color:#24452c}.tab.active{background:var(--g);color:white}
+.hidden{display:none!important}.notice{padding:10px;border-radius:9px;background:#fff4df;margin:8px 0;font-size:13px;line-height:1.5}
+.item,.order{border:1px solid var(--line);border-radius:12px;padding:12px;margin:9px 0}
+.itemtop{display:flex;align-items:center;gap:10px}.thumb{width:64px;height:64px;object-fit:cover;border-radius:9px;background:#f0f2ed}.iteminfo{flex:1;min-width:0}.iteminfo strong{display:block}.iteminfo small{color:#687368}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.status{display:inline-block;padding:5px 8px;border-radius:20px;background:#fff0d9;font-size:12px;font-weight:bold}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:#f0f6ef;padding:13px;border-radius:12px}.stat strong{font-size:23px;display:block;color:var(--g)}
+@media(max-width:600px){.grid{grid-template-columns:1fr 1fr}.row>*{min-width:100%}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Shree Chaat Corner</h1><p>Owner Control Panel · Menu · Orders</p></div></header>
+<main class="wrap">
+<section id="loginCard" class="card">
+<h2>Owner Login</h2><p class="muted">Sign in using the owner email/password created in Firebase Authentication. Do not share these credentials.</p>
+<label for="email">Owner email</label><input id="email" type="email" autocomplete="username" placeholder="Owner email">
+<label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
+<div class="actions"><button id="loginBtn" class="primary">Sign in</button></div><p id="loginMsg" class="muted" role="status"></p>
+</section>
+<section id="app" class="hidden">
+<div class="card"><div class="row" style="align-items:center"><div><strong id="signedInAs">Owner</strong><div class="muted">Signed in</div></div><button id="logoutBtn" class="secondary" style="flex:0 0 auto">Sign out</button></div>
+<div class="notice">Important: this panel expects Firebase Realtime Database paths <code>menuItems</code>, <code>orders</code> and <code>orderStatus</code>. Customer app menu will update automatically only after its code is changed to read <code>menuItems</code>.</div></div>
+<nav><button class="tab active" data-tab="dashboard">Dashboard</button><button class="tab" data-tab="menuTab">Manage Menu</button><button class="tab" data-tab="ordersTab">Orders</button></nav>
+<section id="dashboard" class="card"><h2>Dashboard</h2><div class="grid"><div class="stat"><strong id="menuCount">0</strong><span>Menu items</span></div><div class="stat"><strong id="orderCount">0</strong><span>Total orders</span></div><div class="stat"><strong id="newOrderCount">0</strong><span>New / pending</span></div></div><p class="muted">Keep this page private and sign out when finished.</p></section>
+<section id="menuTab" class="hidden">
+<div class="card"><h2 id="formTitle">Add Menu Item</h2><input id="itemKey" type="hidden">
+<div class="row"><div><label for="itemName">Item name</label><input id="itemName" maxlength="100" placeholder="e.g. Samosa"></div><div><label for="itemPrice">Price (₹)</label><input id="itemPrice" type="number" min="0" step="1" placeholder="15"></div></div>
+<div class="row"><div><label for="itemCategory">Category</label><select id="itemCategory"><option>Snacks</option><option>Chaat</option><option>Sandwiches</option><option>Dinner</option><option>Drinks</option><option>Other</option></select></div><div><label for="itemEmoji">Emoji fallback</label><input id="itemEmoji" maxlength="8" value="🍽️"></div></div>
+<label for="itemPhoto">Item photo (optional)</label><input id="itemPhoto" type="file" accept="image/*"><p class="muted">Photo upload needs Firebase Storage enabled and suitable Storage rules. If not enabled, save the item without a photo first.</p>
+<label><input id="itemAvailable" type="checkbox" checked style="width:auto"> Available for customers</label>
+<div class="actions"><button id="saveItemBtn" class="primary">Save item</button><button id="cancelEditBtn" class="secondary">Clear form</button></div><p id="menuMsg" class="muted" role="status"></p></div>
+<div class="card"><h2>Current Menu</h2><p class="muted">The items here are saved in Firebase under <code>menuItems</code>. This does not yet change the old fixed customer menu until we update its code.</p><div id="menuList">Loading menu…</div></div>
+</section>
+<section id="ordersTab" class="card hidden"><h2>Customer Orders</h2><p class="muted">Orders are read from <code>orders</code>. Status changes are also written to <code>orderStatus</code> for the customer tracking screen.</p><div id="ordersList">Loading orders…</div></section>
+</section>
+</main>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getDatabase, ref, onValue, set, update, remove, get, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+import { firebaseConfig } from './firebase-config.js';
+const $=id=>document.getElementById(id);
+const configured=firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL && !String(firebaseConfig.apiKey).includes('YOUR_');
+let app,db,auth,storage,menuCache={},ordersCache={};
+const money=n=>'₹'+Number(n||0).toFixed(0);
+if(configured){app=initializeApp(firebaseConfig);db=getDatabase(app);auth=getAuth(app);storage=getStorage(app)}
+else{$('loginMsg').textContent='Firebase config not found or incomplete. Upload firebase-config.js beside owner.html.';$('loginBtn').disabled=true}
+$('loginBtn').onclick=async()=>{ $('loginMsg').textContent='Signing in…';try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){$('loginMsg').textContent='Login failed: '+(e.code||e.message)+'. Check owner email/password and Firebase Authentication settings.'}};
+$('logoutBtn').onclick=()=>signOut(auth);
+onAuthStateChanged(auth,user=>{
+  $('loginCard').classList.toggle('hidden',!!user);$('app').classList.toggle('hidden',!user);
+  if(!user)return;
+  $('signedInAs').textContent=user.email||'Owner';
+  // Realtime Database security rules must restrict write access to the intended owner account.
+  onValue(ref(db,'menuItems'),s=>{menuCache=s.val()||{};renderMenu();updateStats()});
+  onValue(ref(db,'orders'),s=>{ordersCache=s.val()||{};renderOrders();updateStats()});
+});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['dashboard','menuTab','ordersTab'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab))});
+function updateStats(){const ms=Object.values(menuCache);const os=Object.values(ordersCache);$('menuCount').textContent=ms.length;$('orderCount').textContent=os.length;$('newOrderCount').textContent=os.filter(o=>!['Delivered','Cancelled','Completed'].includes(String(o.status||'').toLowerCase().replace(/^./,c=>c.toUpperCase())) && !['Delivered','Cancelled','Completed'].includes(o.status)).length}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderMenu(){const entries=Object.entries(menuCache);$('menuList').innerHTML=entries.length?entries.map(([key,p])=>`<div class="item"><div class="itemtop">${p.photoUrl?`<img class="thumb" src="${esc(p.photoUrl)}" alt="">`:`<div class="thumb" style="display:grid;place-items:center;font-size:27px">${esc(p.emoji||'🍽️')}</div>`}<div class="iteminfo"><strong>${esc(p.name||key)}</strong><small>${esc(p.category||'Other')} · ${money(p.price)} · ${p.available===false?'Unavailable':'Available'}</small></div></div><div class="actions"><button class="secondary" data-edit="${esc(key)}">Edit</button><button class="secondary" data-toggle="${esc(key)}">${p.available===false?'Make available':'Mark unavailable'}</button><button class="danger" data-delete="${esc(key)}">Delete</button></div></div>`).join(''):'<p class="muted">No menu items in Firebase yet. Add items above, or use “Import starter menu” to load the existing 24 items.</p><button class="primary" id="seedMenuBtn">Import starter menu</button>';
+document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editItem(b.dataset.edit));document.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleItem(b.dataset.toggle));document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteItem(b.dataset.delete));const seed=$('seedMenuBtn');if(seed)seed.onclick=seedMenu}
+function clearForm(){$('itemKey').value='';$('itemName').value='';$('itemPrice').value='';$('itemCategory').value='Snacks';$('itemEmoji').value='🍽️';$('itemPhoto').value='';$('itemAvailable').checked=true;$('formTitle').textContent='Add Menu Item';$('menuMsg').textContent=''}
+$('cancelEditBtn').onclick=clearForm;
+function editItem(key){const p=menuCache[key];if(!p)return;$('itemKey').value=key;$('itemName').value=p.name||'';$('itemPrice').value=p.price??'';$('itemCategory').value=p.category||'Other';$('itemEmoji').value=p.emoji||'🍽️';$('itemAvailable').checked=p.available!==false;$('formTitle').textContent='Edit Menu Item';$('menuMsg').textContent='Editing '+p.name;window.scrollTo({top:0,behavior:'smooth'})}
+$('saveItemBtn').onclick=async()=>{const name=$('itemName').value.trim(),price=Number($('itemPrice').value),key=$('itemKey').value||('item_'+Date.now());if(!name||!Number.isFinite(price)||price<0){$('menuMsg').textContent='Enter a name and valid price.';return}const btn=$('saveItemBtn');btn.disabled=true;$('menuMsg').textContent='Saving…';try{let photoUrl=menuCache[key]?.photoUrl||'';const file=$('itemPhoto').files[0];if(file){if(!storage)throw new Error('Firebase Storage is not available. Enable Storage in Firebase Console first.');if(file.size>5*1024*1024)throw new Error('Please choose a photo smaller than 5 MB.');const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const sr=storageRef(storage,`menuPhotos/${key}/${Date.now()}_${safe}`);await uploadBytes(sr,file);photoUrl=await getDownloadURL(sr)}const item={name,price,category:$('itemCategory').value,emoji:$('itemEmoji').value.trim()||'🍽️',available:$('itemAvailable').checked,updatedAt:Date.now()};if(photoUrl)item.photoUrl=photoUrl;await set(ref(db,'menuItems/'+key),item);$('menuMsg').textContent='Saved to Firebase. Customer app will show it after its menu code is connected to menuItems.';clearForm()}catch(e){$('menuMsg').textContent='Could not save: '+(e.message||e)}finally{btn.disabled=false}};
+async function toggleItem(key){const p=menuCache[key];if(!p)return;try{await update(ref(db,'menuItems/'+key),{available:p.available===false,updatedAt:Date.now()})}catch(e){alert('Could not update availability: '+e.message)}}
+async function deleteItem(key){const p=menuCache[key];if(!p||!confirm(`Delete "${p.name||key}" from the Firebase menu?`))return;try{await remove(ref(db,'menuItems/'+key))}catch(e){alert('Could not delete item: '+e.message)}}
+const starter=[
+['Samosa',15,'Snacks','🥟'],['Kachori',20,'Snacks','🟤'],['Samosa Chaat',50,'Chaat','🥣'],['Kachori Chaat',50,'Chaat','🥣'],['Sundal Chaat',40,'Chaat','🫘'],['Pani Puri',30,'Chaat','🟠'],['Dahi Puri',35,'Chaat','🥣'],['Cheese Puri',65,'Chaat','🧀'],['Sev Puri',45,'Chaat','🥗'],['Veg Bread Sandwich',40,'Sandwiches','🥪'],['Veg Bread Cheese Sandwich',50,'Sandwiches','🥪'],['Murukku Sandwich',60,'Sandwiches','🍘'],['Murukku Cheese Sandwich',70,'Sandwiches','🧀'],['Khakhra Sandwich',70,'Sandwiches','🥙'],['Khakhra Cheese Sandwich',90,'Sandwiches','🧀'],['Roti Sabji',30,'Dinner','🫓'],['Triangle Paratha Sabji',40,'Dinner','🔺'],['Methi Paratha Sabji',50,'Dinner','🌿'],['Aaloo Paratha Sabji',60,'Dinner','🥔'],['Special Paneer Sabji',50,'Dinner','🍛'],['Water Bottle ₹10',10,'Drinks','💧'],['Water Bottle ₹20',20,'Drinks','💧'],['Cool Drink ₹10',10,'Drinks','🥤'],['Cool Drink ₹20',20,'Drinks','🥤']];
+async function seedMenu(){if(!confirm('Import the 24 starter items into menuItems? Existing keys will not be overwritten.'))return;try{const snap=await get(ref(db,'menuItems'));const old=snap.val()||{};const updates={};starter.forEach((a,i)=>{const key='scc_'+String(i+1).padStart(2,'0');if(!old[key])updates[key]={name:a[0],price:a[1],category:a[2],emoji:a[3],available:true,updatedAt:Date.now()}});if(Object.keys(updates).length)await update(ref(db,'menuItems'),updates);$('menuMsg').textContent='Starter menu imported. Review it before publishing to customers.'}catch(e){alert('Import failed: '+e.message)}}
+function renderOrders(){const entries=Object.entries(ordersCache).sort((a,b)=>Number(b[1]?.createdAt||b[1]?.updatedAt||0)-Number(a[1]?.createdAt||a[1]?.updatedAt||0));$('ordersList').innerHTML=entries.length?entries.map(([id,o])=>{const items=Array.isArray(o.items)?o.items.map(i=>`${esc(i.name)} × ${esc(i.qty)}`).join(', '):'';const st=o.status||'Order received';return `<article class="order"><strong>Order ${esc(id)}</strong> <span class="status">${esc(st)}</span><p><b>${esc(o.name||'Customer')}</b> · ${esc(o.phone||'')}</p><p class="muted">${esc(o.type||o.orderType||'')} ${o.address?'· '+esc(o.address):''}</p><p class="muted">${items}</p><p><b>Total: ${money(o.total)}</b></p><label for="st_${esc(id)}">Update status</label><div class="row"><select id="st_${esc(id)}">${['Order received','Confirmed','Preparing','Ready for pickup','Out for delivery','Delivered','Cancelled'].map(s=>`<option ${s===st?'selected':''}>${s}</option>`).join('')}</select><button class="primary" data-status="${esc(id)}">Save status</button></div></article>`}).join(''):'<p class="muted">No orders found in Firebase yet.</p>';
+document.querySelectorAll('[data-status]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.status))}
+async function changeStatus(id){const status=$('st_'+id).value;try{await update(ref(db,'orders/'+id),{status,updatedAt:Date.now()});await set(ref(db,'orderStatus/'+id),{status,updatedAt:Date.now()});alert('Order status updated.')}catch(e){alert('Could not update status: '+e.message)}}
+</script>
+</body></html>
