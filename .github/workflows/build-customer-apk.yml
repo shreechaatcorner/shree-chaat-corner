@@ -1,0 +1,123 @@
+name: Build Shree Chaat Corner Customer APK
+on:
+  push:
+    paths:
+      - '.github/workflows/build-customer-apk.yml'
+      - 'icon-512.png'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Create Android WebView project
+        run: |
+          mkdir -p customer-android/app/src/main/java/com/shreechaatcorner/customer
+          mkdir -p customer-android/app/src/main/res/drawable
+          cp icon-512.png customer-android/app/src/main/res/drawable/customer_icon.png
+          cat > customer-android/settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+          rootProject.name = 'ShreeChaatCustomer'
+          include ':app'
+          EOF
+          cat > customer-android/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.7.3' apply false
+          }
+          EOF
+          cat > customer-android/app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+          android {
+              namespace 'com.shreechaatcorner.customer'
+              compileSdk 35
+              defaultConfig {
+                  applicationId 'com.shreechaatcorner.customer'
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0.0'
+              }
+          }
+          EOF
+          cat > customer-android/app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <application android:label="Shree Chaat Corner" android:icon="@drawable/customer_icon" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.Light.NoActionBar">
+                  <activity android:name=".MainActivity" android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+          cat > customer-android/app/src/main/java/com/shreechaatcorner/customer/MainActivity.java <<'EOF'
+          package com.shreechaatcorner.customer;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.webkit.WebChromeClient.FileChooserParams;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.webkit.ValueCallback;
+          public class MainActivity extends Activity {
+              private WebView webView;
+              private ValueCallback<Uri[]> uploadCallback;
+              private static final int FILE_PICKER = 1001;
+              @Override public void onCreate(Bundle state) {
+                  super.onCreate(state);
+                  webView = new WebView(this);
+                  WebSettings s = webView.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setAllowFileAccess(true);
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
+                          if (uploadCallback != null) uploadCallback.onReceiveValue(null);
+                          uploadCallback = callback;
+                          Intent intent = params.createIntent();
+                          try { startActivityForResult(intent, FILE_PICKER); return true; }
+                          catch (Exception e) { uploadCallback = null; return false; }
+                      }
+                  });
+                  setContentView(webView);
+                  webView.loadUrl("https://shreechaatcorner.github.io/shree-chaat-corner/");
+              }
+              @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode == FILE_PICKER && uploadCallback != null) {
+                      Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+                      uploadCallback.onReceiveValue(result);
+                      uploadCallback = null;
+                  }
+              }
+              @Override public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+              }
+          }
+          EOF
+      - name: Build customer APK
+        working-directory: customer-android
+        run: gradle assembleDebug
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shree-Chaat-Corner-Customer-APK
+          path: customer-android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
