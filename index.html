@@ -245,7 +245,7 @@ ${ADMIN_URL}
 
 Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}
 Please confirm this order and update its status in Owner Admin.`;
- window.open("https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message),"_blank");
+ window.location.href="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);
  alert("Order ID: "+orderId+"\n\nCustomer tracking link:\n"+trackLink+"\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+"\n\nSend the order in WhatsApp to notify the shop.");
  Object.keys(cart).forEach(k=>delete cart[k]);renderMenu();renderCart();renderHistory();$("trackIdInput").value=orderId;showPage("history");
 };
