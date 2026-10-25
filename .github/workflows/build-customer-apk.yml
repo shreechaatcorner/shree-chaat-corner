@@ -4,6 +4,7 @@ on:
     paths:
       - '.github/workflows/build-customer-apk.yml'
       - 'icon-512.png'
+      - 'index.html'
   workflow_dispatch:
 permissions:
   contents: read
@@ -86,7 +87,20 @@ jobs:
                   s.setJavaScriptEnabled(true);
                   s.setDomStorageEnabled(true);
                   s.setAllowFileAccess(true);
-                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+                          android.net.Uri uri = request.getUrl();
+                          String host = uri.getHost() == null ? "" : uri.getHost();
+                          if (host.equals("wa.me") || host.equals("api.whatsapp.com") || uri.getScheme().equals("whatsapp")) {
+                              try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                              catch (Exception e) { view.loadUrl(uri.toString()); }
+                              return true;
+                          }
+                          if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) return false;
+                          try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); return true; }
+                          catch (Exception e) { return true; }
+                      }
+                  });
                   webView.setWebChromeClient(new WebChromeClient() {
                       @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                           if (uploadCallback != null) uploadCallback.onReceiveValue(null);
