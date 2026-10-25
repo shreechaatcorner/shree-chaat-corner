@@ -56,12 +56,13 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, onValue, set, update, remove, get, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
 const $=id=>document.getElementById(id);
 const configured=firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL && !String(firebaseConfig.apiKey).includes('YOUR_');
-let app,db,auth,storage,menuCache={},ordersCache={};
+let app,db,auth,storage,firestore,menuCache={},ordersCache={};
 const money=n=>'₹'+Number(n||0).toFixed(0);
-if(configured){app=initializeApp(firebaseConfig);db=getDatabase(app);auth=getAuth(app);storage=getStorage(app)}
+if(configured){app=initializeApp(firebaseConfig);db=getDatabase(app);auth=getAuth(app);storage=getStorage(app);firestore=getFirestore(app)}
 else{$('loginMsg').textContent='Firebase config not found or incomplete. Upload firebase-config.js beside owner.html.';$('loginBtn').disabled=true}
 $('loginBtn').onclick=async()=>{ $('loginMsg').textContent='Signing in…';try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){$('loginMsg').textContent='Login failed: '+(e.code||e.message)+'. Check owner email/password and Firebase Authentication settings.'}};
 $('logoutBtn').onclick=()=>signOut(auth);
@@ -71,7 +72,12 @@ onAuthStateChanged(auth,user=>{
   $('signedInAs').textContent=user.email||'Owner';
   // Realtime Database security rules must restrict write access to the intended owner account.
   onValue(ref(db,'menuItems'),s=>{menuCache=s.val()||{};renderMenu();updateStats()});
-  onValue(ref(db,'orders'),s=>{ordersCache=s.val()||{};renderOrders();updateStats()});
+  // Customer orders are written to Cloud Firestore by index.html, not Realtime Database.
+  onSnapshot(collection(firestore,'orders'),snapshot=>{
+    ordersCache={};
+    snapshot.forEach(orderDoc=>{ordersCache[orderDoc.id]={...orderDoc.data(),id:orderDoc.id}});
+    renderOrders();updateStats();
+  },error=>{$('ordersList').textContent='Could not load orders: '+error.message});
 });
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['dashboard','menuTab','ordersTab'].forEach(id=>$(id).classList.toggle('hidden',id!==b.dataset.tab))});
 function updateStats(){const ms=Object.values(menuCache);const os=Object.values(ordersCache);$('menuCount').textContent=ms.length;$('orderCount').textContent=os.length;$('newOrderCount').textContent=os.filter(o=>!['Delivered','Cancelled','Completed'].includes(String(o.status||'').toLowerCase().replace(/^./,c=>c.toUpperCase())) && !['Delivered','Cancelled','Completed'].includes(o.status)).length}
@@ -89,6 +95,10 @@ const starter=[
 async function seedMenu(){if(!confirm('Import the 24 starter items into menuItems? Existing keys will not be overwritten.'))return;try{const snap=await get(ref(db,'menuItems'));const old=snap.val()||{};const updates={};starter.forEach((a,i)=>{const key='scc_'+String(i+1).padStart(2,'0');if(!old[key])updates[key]={name:a[0],price:a[1],category:a[2],emoji:a[3],available:true,updatedAt:Date.now()}});if(Object.keys(updates).length)await update(ref(db,'menuItems'),updates);$('menuMsg').textContent='Starter menu imported. Review it before publishing to customers.'}catch(e){alert('Import failed: '+e.message)}}
 function renderOrders(){const entries=Object.entries(ordersCache).sort((a,b)=>Number(b[1]?.createdAt||b[1]?.updatedAt||0)-Number(a[1]?.createdAt||a[1]?.updatedAt||0));$('ordersList').innerHTML=entries.length?entries.map(([id,o])=>{const items=Array.isArray(o.items)?o.items.map(i=>`${esc(i.name)} × ${esc(i.qty)}`).join(', '):'';const st=o.status||'Order received';return `<article class="order"><strong>Order ${esc(id)}</strong> <span class="status">${esc(st)}</span><p><b>${esc(o.name||'Customer')}</b> · ${esc(o.phone||'')}</p><p class="muted">${esc(o.type||o.orderType||'')} ${o.address?'· '+esc(o.address):''}</p><p class="muted">${items}</p><p><b>Total: ${money(o.total)}</b></p><label for="st_${esc(id)}">Update status</label><div class="row"><select id="st_${esc(id)}">${['Order received','Confirmed','Preparing','Ready for pickup','Out for delivery','Delivered','Cancelled'].map(s=>`<option ${s===st?'selected':''}>${s}</option>`).join('')}</select><button class="primary" data-status="${esc(id)}">Save status</button></div></article>`}).join(''):'<p class="muted">No orders found in Firebase yet.</p>';
 document.querySelectorAll('[data-status]').forEach(b=>b.onclick=()=>changeStatus(b.dataset.status))}
-async function changeStatus(id){const status=$('st_'+id).value;try{await update(ref(db,'orders/'+id),{status,updatedAt:Date.now()});await set(ref(db,'orderStatus/'+id),{status,updatedAt:Date.now()});alert('Order status updated.')}catch(e){alert('Could not update status: '+e.message)}}
+async function changeStatus(id){const status=$('st_'+id).value;try{
+  await updateDoc(doc(firestore,'orders',id),{status,updatedAt:serverTimestamp()});
+  await setDoc(doc(firestore,'orderStatus',id),{status,updatedAt:serverTimestamp()});
+  alert('Order status updated.');
+}catch(e){alert('Could not update status: '+e.message)}}
 </script>
 </body></html>
