@@ -45,10 +45,10 @@ jobs:
           cat > customer-android/app/build.gradle <<'EOF'
           plugins { id 'com.android.application' }
           android {
-              namespace 'com.shreechaatcorner.customer'
+              namespace 'com.shreechaatcorner.customer.release'
               compileSdk 35
               defaultConfig {
-                  applicationId 'com.shreechaatcorner.customer'
+                  applicationId 'com.shreechaatcorner.customer.release'
                   minSdk 23
                   targetSdk 35
                   versionCode 2
@@ -84,7 +84,7 @@ jobs:
           </manifest>
           EOF
           cat > customer-android/app/src/main/java/com/shreechaatcorner/customer/MainActivity.java <<'EOF'
-          package com.shreechaatcorner.customer;
+          package com.shreechaatcorner.customer.release;
           import android.app.Activity;
           import android.os.Bundle;
           import android.webkit.WebChromeClient;
