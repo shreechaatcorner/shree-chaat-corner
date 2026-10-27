@@ -1,6 +1,10 @@
 plugins {
     id 'com.android.application'
 }
+def hasGoogleServices = file('google-services.json').exists()
+if (hasGoogleServices) {
+    apply plugin: 'com.google.gms.google-services'
+}
 android {
     namespace 'com.shreechaatcorner.owner'
     compileSdk 35
@@ -8,7 +12,13 @@ android {
         applicationId 'com.shreechaatcorner.owner.new'
         minSdk 23
         targetSdk 35
-        versionCode 2
-        versionName '1.1'
+        versionCode 3
+        versionName '1.2'
+    }
+}
+dependencies {
+    if (hasGoogleServices) {
+        implementation platform('com.google.firebase:firebase-bom:34.3.0')
+        implementation 'com.google.firebase:firebase-messaging'
     }
 }
