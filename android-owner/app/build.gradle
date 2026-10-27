@@ -17,8 +17,6 @@ android {
     }
 }
 dependencies {
-    if (hasGoogleServices) {
-        implementation platform('com.google.firebase:firebase-bom:34.3.0')
-        implementation 'com.google.firebase:firebase-messaging'
-    }
+    implementation platform('com.google.firebase:firebase-bom:34.3.0')
+    implementation 'com.google.firebase:firebase-messaging'
 }
