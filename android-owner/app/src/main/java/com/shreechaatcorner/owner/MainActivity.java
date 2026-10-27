@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -20,6 +21,7 @@ public class MainActivity extends Activity {
         root.addView(webView, new FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        FirebaseMessaging.getInstance().subscribeToTopic("shree_chaat_owner_orders");
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
