@@ -32,7 +32,7 @@ nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.tab{background:#e8ee
 <h2>Owner Login</h2><p class="muted">Sign in using the owner email/password created in Firebase Authentication. Do not share these credentials.</p>
 <label for="email">Owner email</label><input id="email" type="email" autocomplete="username" placeholder="Owner email">
 <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
-<div class="actions"><button id="loginBtn" class="primary">Sign in</button></div><p id="loginMsg" class="muted" role="status"></p>
+<div class="actions"><button id="loginBtn" type="button" class="primary">Sign in</button></div><p id="loginMsg" class="muted" role="status"></p>
 </section>
 <section id="app" class="hidden">
 <div class="card"><div class="row" style="align-items:center"><div><strong id="signedInAs">Owner</strong><div class="muted">Signed in</div></div><button id="logoutBtn" class="secondary" style="flex:0 0 auto">Sign out</button></div>
@@ -64,7 +64,20 @@ let app,db,auth,storage,firestore,menuCache={},ordersCache={},ordersListenerInit
 const money=n=>'₹'+Number(n||0).toFixed(0);
 if(configured){app=initializeApp(firebaseConfig);db=getDatabase(app);auth=getAuth(app);storage=getStorage(app);firestore=getFirestore(app)}
 else{$('loginMsg').textContent='Firebase config not found or incomplete. Upload firebase-config.js beside owner.html.';$('loginBtn').disabled=true}
-$('loginBtn').onclick=async()=>{ $('loginMsg').textContent='Signing in…';try{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value)}catch(e){$('loginMsg').textContent='Login failed: '+(e.code||e.message)+'. Check owner email/password and Firebase Authentication settings.'}};
+const loginOwner=async()=>{
+  const email=$('email').value.trim(), password=$('password').value;
+  if(!email||!password){$('loginMsg').textContent='Please enter both owner email and password.';return}
+  if(!configured||!auth){$('loginMsg').textContent='Firebase is not configured correctly. Please refresh the app and try again.';return}
+  $('loginBtn').disabled=true;$('loginMsg').textContent='Signing in…';
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    $('loginMsg').textContent='Sign-in successful. Loading owner dashboard…';
+  }catch(e){
+    $('loginMsg').textContent='Login failed: '+(e.code||e.message)+'. Check the owner email/password and Firebase Authentication settings.';
+  }finally{$('loginBtn').disabled=false}
+};
+$('loginBtn').addEventListener('click',loginOwner);
+['email','password'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')loginOwner()}));
 $('logoutBtn').onclick=()=>signOut(auth);
 onAuthStateChanged(auth,user=>{
   $('loginCard').classList.toggle('hidden',!!user);$('app').classList.toggle('hidden',!user);
