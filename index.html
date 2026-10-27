@@ -112,7 +112,7 @@ const money=n=>Math.round(Number(n)||0).toString();
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
 let customerStatusUnsubscribe=null, trackedStatus=null;
-window.enableCustomerAlerts=async()=>{if(!("Notification" in window)){alert("This browser does not support notifications.");return;}const p=await Notification.requestPermission();alert(p==="granted"?"Order alerts enabled while this app/page is open. For alerts when fully closed, push notification setup is still required.":"Notifications were not allowed. You can still check status here.");};
+window.enableCustomerAlerts=async()=>{if(!("Notification" in window)||!("serviceWorker" in navigator)){alert("This app view does not support browser notifications. You can open the tracking link in Chrome to check whether notifications are supported.");return;}try{const p=await Notification.requestPermission();alert(p==="granted"?"Notifications are allowed in this browser. Status-change alerts work only while the tracking page is open; alerts when the app is closed are not enabled yet.":"Notifications were not allowed. You can still check status here.");}catch(e){alert("Notifications are unavailable in this app. Please use the Track Your Order page.");}};
 function startCustomerStatusWatch(id){if(!db||!fsModule)return;if(customerStatusUnsubscribe){customerStatusUnsubscribe();customerStatusUnsubscribe=null;}trackedStatus=null;customerStatusUnsubscribe=fsModule.onSnapshot(fsModule.doc(db,"orderStatus",id),snap=>{if(!snap.exists())return;const s=snap.data().status||"Order Placed";const out=$("statusResult");if(out)out.innerHTML=`<p>Order ID: <b>${escapeHtml(id)}</b></p><p>Current Status: <span class="status">${escapeHtml(s)}</span></p><p class="small">Live status updates are enabled while this page is open.</p>`;if(trackedStatus!==null&&trackedStatus!==s&&"Notification" in window&&Notification.permission==="granted"){try{new Notification("Shree Chaat Corner — Order Update",{body:"Your order status is now: "+s});}catch(e){}}trackedStatus=s;},err=>console.error("Status listener error:",err));}
 async function initFirebase(){
  try{
@@ -150,10 +150,10 @@ function loadMenuFromOwner(){
    $("menuSyncStatus").textContent="Owner menu not yet imported. Showing default menu.";
    renderMenu();renderCart();return;
   }
-  const keys=Object.keys(data).sort((a,b)=>Number((a.match(/\d+$/)||[])[0]||999)-Number((b.match(/\d+$/)||[])[0]||999));
+  const keys=Object.keys(data).sort((a,b)=>{const na=Number((a.match(/\d+$/)||[])[0]),nb=Number((b.match(/\d+$/)||[])[0]);if(Number.isFinite(na)&&Number.isFinite(nb))return na-nb;if(Number.isFinite(na))return -1;if(Number.isFinite(nb))return 1;return a.localeCompare(b);});
   const newItems=keys.map((key,index)=>{
-   const raw=data[key]||{},fallback=fallbackItems[index];
-   return {id:index+1,key,n:String(raw.name||fallback?.n||"Menu Item"),p:Number.isFinite(Number(raw.price))?Number(raw.price):(fallback?.p||0),available:raw.available!==false,emoji:raw.emoji||fallback?.emoji||"🍽️",photoUrl:typeof raw.photoUrl==="string"?raw.photoUrl:""};
+   const raw=data[key]||{},suffix=Number((key.match(/\d+$/)||[])[0]),id=Number.isFinite(suffix)&&suffix>0?suffix:(Number(raw.id)>0?Number(raw.id):index+1),fallback=fallbackItems.find(x=>x.id===id)||fallbackItems[index];
+   return {id,key,n:String(raw.name||fallback?.n||"Menu Item"),p:Number.isFinite(Number(raw.price))?Number(raw.price):(fallback?.p||0),available:raw.available!==false,emoji:raw.emoji||fallback?.emoji||"🍽️",photoUrl:typeof raw.photoUrl==="string"?raw.photoUrl:""};
   });
   items=newItems.filter(i=>i.available);
   $("menuSyncStatus").textContent=items.length?"Menu synced from Owner App.":"All menu items are currently unavailable.";
@@ -230,7 +230,7 @@ Name: ${name}
 Mobile: ${phone}
 Order Type: ${type}
 ${address?"Address: "+address:""}
-${type==="Home Delivery"?"Distance: "+order.distance+" km":""}
+${type==="Home Delivery"?"Distance: "+order.distance+" km (customer-entered)":""}
 
 ${lines}
 
@@ -242,14 +242,9 @@ ${notes?"Notes: "+notes:""}
 
 CUSTOMER TRACKING LINK:
 ${trackLink}
-
-OWNER ADMIN LINK (owner login required):
-${ADMIN_URL}
-
-Firebase saved: ${savedToFirebase?"Yes":"No - check Firebase setup"}
-Please confirm this order and update its status in Owner Admin.`;
+Please confirm this order and update its status in the Owner App.`;
+ alert("Order ID: "+orderId+"\n\n"+(savedToFirebase?"Order saved for online tracking.":"Order tracking may not update because Firebase save failed.")+"\n\nWhatsApp will open next. Please press Send to place your order.");
  window.location.href="https://wa.me/"+SHOP_WHATSAPP+"?text="+encodeURIComponent(message);
- alert("Order ID: "+orderId+"\n\nCustomer tracking link:\n"+trackLink+"\n\n"+(savedToFirebase?"Order saved to Firebase.":"Firebase save failed; live tracking is not guaranteed.")+"\n\nSend the order in WhatsApp to notify the shop.");
  Object.keys(cart).forEach(k=>delete cart[k]);renderMenu();renderCart();renderHistory();$("trackIdInput").value=orderId;showPage("history");
 };
 window.trackOrderLive=async()=>{
