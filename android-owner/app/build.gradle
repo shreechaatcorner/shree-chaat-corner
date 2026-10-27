@@ -5,7 +5,7 @@ android {
     namespace 'com.shreechaatcorner.owner'
     compileSdk 35
     defaultConfig {
-        applicationId 'com.shreechaatcorner.owner'
+        applicationId 'com.shreechaatcorner.owner.new'
         minSdk 23
         targetSdk 35
         versionCode 2
