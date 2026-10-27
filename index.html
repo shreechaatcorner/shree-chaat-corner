@@ -80,7 +80,7 @@ a{color:#c2410c;overflow-wrap:anywhere}
 <p class="small">WhatsApp will open with your order details. Press Send there to send the order to the shop.</p>
 </div></section>
 <section id="history" class="page">
-<h2>🔎 Track Your Order</h2><div class="panel"><label for="trackIdInput">Order ID</label><input id="trackIdInput" placeholder="Enter your complete Order ID"><button class="btn" style="width:100%" onclick="trackOrderLive()">Check Order Status</button><div id="statusResult" style="margin-top:12px"></div></div>
+<h2>🔎 Track Your Order</h2><div class="panel"><label for="trackIdInput">Order ID</label><input id="trackIdInput" placeholder="Enter your complete Order ID"><button class="btn" style="width:100%" onclick="trackOrderLive()">Check Order Status</button><button class="btn green" style="width:100%;margin-top:8px" onclick="enableCustomerAlerts()">🔔 Enable Order Alerts</button><div id="statusResult" style="margin-top:12px"></div></div>
 <h2>📋 Order History</h2><div id="historyList">No orders on this device yet.</div>
 </section>
 <section id="adminPage" class="page"><h2>🔐 Owner Admin</h2><div class="panel">
@@ -111,6 +111,9 @@ const $=id=>document.getElementById(id);
 const money=n=>Math.round(Number(n)||0).toString();
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 
+let customerStatusUnsubscribe=null, trackedStatus=null;
+window.enableCustomerAlerts=async()=>{if(!("Notification" in window)){alert("This browser does not support notifications.");return;}const p=await Notification.requestPermission();alert(p==="granted"?"Order alerts enabled while this app/page is open. For alerts when fully closed, push notification setup is still required.":"Notifications were not allowed. You can still check status here.");};
+function startCustomerStatusWatch(id){if(!db||!fsModule)return;if(customerStatusUnsubscribe){customerStatusUnsubscribe();customerStatusUnsubscribe=null;}trackedStatus=null;customerStatusUnsubscribe=fsModule.onSnapshot(fsModule.doc(db,"orderStatus",id),snap=>{if(!snap.exists())return;const s=snap.data().status||"Order Placed";const out=$("statusResult");if(out)out.innerHTML=`<p>Order ID: <b>${escapeHtml(id)}</b></p><p>Current Status: <span class="status">${escapeHtml(s)}</span></p><p class="small">Live status updates are enabled while this page is open.</p>`;if(trackedStatus!==null&&trackedStatus!==s&&"Notification" in window&&Notification.permission==="granted"){try{new Notification("Shree Chaat Corner — Order Update",{body:"Your order status is now: "+s});}catch(e){}}trackedStatus=s;},err=>console.error("Status listener error:",err));}
 async function initFirebase(){
  try{
   const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -251,7 +254,7 @@ Please confirm this order and update its status in Owner Admin.`;
 };
 window.trackOrderLive=async()=>{
  const id=$("trackIdInput").value.trim(),out=$("statusResult");if(!id){out.textContent="Please enter your Order ID.";return;}out.textContent="Checking status…";
- if(db&&fsModule){try{const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));if(snap.exists()){out.innerHTML=`<p>Order ID: <b>${escapeHtml(id)}</b></p><p>Current Status: <span class="status">${escapeHtml(snap.data().status||"Order Placed")}</span></p><p class="small">Status is from Firebase.</p>`;return;}}catch(err){console.error(err);}}
+ if(db&&fsModule){try{const snap=await fsModule.getDoc(fsModule.doc(db,"orderStatus",id));if(snap.exists()){out.innerHTML=`<p>Order ID: <b>${escapeHtml(id)}</b></p><p>Current Status: <span class="status">${escapeHtml(snap.data().status||"Order Placed")}</span></p><p class="small">Live status updates are enabled while this page is open.</p>`;startCustomerStatusWatch(id);return;}}catch(err){console.error(err);}}
  const local=localOrders().find(o=>o.id===id);
  out.textContent=local?"Status on this device: "+(local.status||"Order Placed")+". This local status may not reflect the latest shop update.":"Order not found or Firebase tracking is not configured. Check the complete Order ID.";
 };
