@@ -9,11 +9,29 @@ import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 public class OwnerMessagingService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = "shree_chaat_owner_updates";
+    private static final String TOPIC = "shree_chaat_owner_orders";
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        subscribeOwnerToOrderAlerts();
+    }
+
+    @Override
+    public void onNewToken(String token) {
+        // Topic subscription uses Firebase-managed registration; no token is exposed in the website.
+        subscribeOwnerToOrderAlerts();
+    }
+
+    private void subscribeOwnerToOrderAlerts() {
+        FirebaseMessaging.getInstance().subscribeToTopic(TOPIC);
+    }
 
     @Override
     public void onMessageReceived(RemoteMessage message) {
@@ -24,12 +42,6 @@ public class OwnerMessagingService extends FirebaseMessagingService {
                 ? message.getNotification().getBody()
                 : message.getData().getOrDefault("body", "You have a new shop update.");
         showNotification(title, body);
-    }
-
-    @Override
-    public void onNewToken(String token) {
-        // Token registration is intentionally left for the secure backend setup.
-        // Never send push tokens or service credentials to an untrusted endpoint.
     }
 
     private void showNotification(String title, String body) {
