@@ -51,6 +51,14 @@ nav{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}.tab{background:#e8ee
 <section id="ordersTab" class="card hidden"><h2>Customer Orders</h2><p class="muted">New orders appear live while this Owner App is open. Enable Notifications for an alert while the app is open. App-closed push alerts require additional Firebase Cloud Messaging setup.</p><div class="actions"><button id="notifyBtn" class="secondary">Enable Notifications</button><button id="refreshOrdersBtn" class="secondary">Refresh Orders</button></div><p id="notifyMsg" class="muted" role="status"></p><div id="ordersList">Loading orders…</div></section>
 </section>
 </main>
+<script>
+(function(){
+  function show(message){var box=document.getElementById('loginMsg');if(box)box.textContent=message;}
+  window.addEventListener('error',function(e){if(e&&(e.message||e.filename))show('App startup error: '+(e.message||'A required script could not load')+'. Check internet and reload.');});
+  window.addEventListener('unhandledrejection',function(e){var x=e&&e.reason;show('App startup error: '+(x&&(x.message||x.code)||'A required service failed to load')+'. Check internet and reload.');});
+  document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('loginBtn');if(b)b.addEventListener('click',function(){var box=document.getElementById('loginMsg');if(box&&!box.textContent)box.textContent='Login button tapped, but login system has not started. Reload this page and check the error shown.';},true);});
+})();
+</script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove, get, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
