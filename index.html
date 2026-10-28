@@ -3,34 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#ea580c">
+<meta name="theme-color" content="#6d28d9">
 <link rel="manifest" href="./manifest.json">
 <title>Shree Chaat Corner</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#fffaf5;color:#292524}
-header{background:linear-gradient(135deg,#f97316,#c2410c);color:white;text-align:center;padding:18px 10px}
+body{margin:0;font-family:Arial,sans-serif;background:#faf7ff;color:#292524}
+header{background:linear-gradient(135deg,#7c3aed,#4c1d95);color:white;text-align:center;padding:18px 10px}
 header h1{margin:5px}
 header p{margin:7px;font-size:13px}
 nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:white;position:sticky;top:0;z-index:10;box-shadow:0 2px 6px #0001}
-nav button{flex:1 0 auto;border:0;border-radius:20px;background:#ffedd5;padding:10px;color:#9a3412;font-weight:bold;cursor:pointer}
-nav button.active{background:#ea580c;color:white}
+nav button{flex:1 0 auto;border:0;border-radius:20px;background:#ede9fe;padding:10px;color:#5b21b6;font-weight:bold;cursor:pointer}
+nav button.active{background:#6d28d9;color:white}
 main{max-width:900px;margin:auto;padding:12px}
 .page{display:none}
 .page.active{display:block}
-.card,.panel{background:white;border:1px solid #f1dfce;border-radius:12px;padding:14px;margin:10px 0}
+.card,.panel{background:white;border:1px solid #ddd6fe;border-radius:12px;padding:14px;margin:10px 0}
 .menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .item-name{font-weight:bold;font-size:16px}
-.price{color:#c2410c;font-weight:bold;margin-top:8px}
-.btn{border:0;border-radius:8px;padding:11px 14px;background:#ea580c;color:white;font-weight:bold;cursor:pointer;margin:4px 2px}
+.price{color:#6d28d9;font-weight:bold;margin-top:8px}
+.btn{border:0;border-radius:8px;padding:11px 14px;background:#6d28d9;color:white;font-weight:bold;cursor:pointer;margin:4px 2px}
 .btn.green{background:#16803c}
 .btn.gray{background:#57534e}
 input,textarea,select{width:100%;padding:12px;border:1px solid #d6d3d1;border-radius:8px;margin:6px 0 12px;font:inherit}
 label{font-weight:bold;font-size:14px}
 .small{font-size:12px;color:#78716c;line-height:1.5}
-.status{display:inline-block;background:#ffedd5;color:#9a3412;border-radius:20px;padding:6px 10px;font-weight:bold;font-size:13px}
+.status{display:inline-block;background:#ede9fe;color:#5b21b6;border-radius:20px;padding:6px 10px;font-weight:bold;font-size:13px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-a{color:#c2410c;overflow-wrap:anywhere}
+a{color:#6d28d9;overflow-wrap:anywhere}
 .menu-photo{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 @media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
 </style>
@@ -61,7 +61,7 @@ a{color:#c2410c;overflow-wrap:anywhere}
 </section>
 <section id="menuPage" class="page">
 <h2>🍽️ Our Menu</h2><p class="small">Menu and availability are synced from Shree Chaat Corner.</p>
-<div id="menuSyncStatus" class="small">Loading menu…</div><div id="menu" class="menu"></div>
+<div id="menuSyncStatus" class="small">Loading menu…</div><label for="menuSearch">Search menu</label><input id="menuSearch" type="search" placeholder="Search Pani Puri, Cool Drink…" oninput="renderMenu()"><label for="menuCategory">Filter by category</label><select id="menuCategory" onchange="renderMenu()"><option value="All">All items</option><option value="Chaat">Chaat</option><option value="Snacks">Snacks</option><option value="Sandwiches">Sandwiches</option><option value="Dinner">Meals & Paratha</option><option value="Drinks">Cool Drinks & Water</option><option value="Other">Other</option></select><div id="menu" class="menu"></div>
 </section>
 <section id="cartPage" class="page">
 <h2>🛒 Checkout</h2><div class="panel">
@@ -183,8 +183,11 @@ window.openTracking=(btn)=>{
  if(orderId)trackOrderLive();
 };
 const qtyButtons=i=>{const q=cart[i.id]||0;return q?`<button class="btn" onclick="changeQty(${i.id},-1)">−</button> ${q} <button class="btn" onclick="changeQty(${i.id},1)">+</button>`:`<button class="btn" onclick="changeQty(${i.id},1)">Add</button>`;};
+function categoryOf(i){if(i.category)return i.category;const n=String(i.n||"").toLowerCase();if(n.includes("puri")||n.includes("chaat"))return "Chaat";if(n.includes("drink")||n.includes("bottle"))return "Drinks";if(n.includes("sandwich"))return "Sandwiches";if(n.includes("paratha")||n.includes("sabji")||n.includes("roti"))return "Dinner";return "Snacks";}
 function renderMenu(){
- $("menu").innerHTML=items.map(i=>`<div class="card">${i.photoUrl?`<img class="menu-photo" src="${escapeHtml(i.photoUrl)}" alt="${escapeHtml(i.n)}" loading="lazy">`:`<div style="font-size:28px">${escapeHtml(i.emoji||"🍽️")}</div>`}<div class="item-name">${escapeHtml(i.n)}</div><div class="price">₹${money(i.p)}${PACKING_ITEM_IDS.includes(i.id)?" + ₹5 packing per quantity":""}</div><div>${qtyButtons(i)}</div></div>`).join("");
+ const term=($("menuSearch")?.value||"").trim().toLowerCase(),category=$("menuCategory")?.value||"All";
+ const shown=items.filter(i=>(!term||String(i.n).toLowerCase().includes(term))&&(category==="All"||categoryOf(i)===category));
+ $("menu").innerHTML=shown.length?shown.map(i=>`<div class="card">${i.photoUrl?`<img class="menu-photo" src="${escapeHtml(i.photoUrl)}" alt="${escapeHtml(i.n)}" loading="lazy">`:`<div style="font-size:28px">${escapeHtml(i.emoji||"🍽️")}</div>`}<div class="item-name">${escapeHtml(i.n)}</div><div class="price">₹${money(i.p)}${PACKING_ITEM_IDS.includes(i.id)?" + ₹5 packing per quantity":""}</div><div>${qtyButtons(i)}</div></div>`).join(""):"<p class=\"small\">No items match your search.</p>";
 }
 function getPackingCharge(){return items.reduce((sum,i)=>sum+(PACKING_ITEM_IDS.includes(i.id)?(cart[i.id]||0)*PACKING_PER_QTY:0),0);}
 function calc(){
@@ -220,8 +223,8 @@ window.placeOrder=async()=>{
  if(type==="Home Delivery"&&(!Number.isFinite(distance)||distance<0))return alert("Enter a valid delivery distance.");
  const c=calc(),orderItems=chosen.map(i=>{const qty=cart[i.id],packing=PACKING_ITEM_IDS.includes(i.id)?qty*PACKING_PER_QTY:0;return {id:i.id,name:i.n,price:i.p,qty,packing};}),notes=$("notes").value.trim();
  const order={name,phone,type,address,distance:type==="Home Delivery"?distance:0,items:orderItems,subtotal:c.subtotal,delivery:c.delivery,packing:c.packing,total:c.total,notes,status:"Order Placed",createdAt:new Date().toISOString()};
- let orderId="SCC"+Date.now().toString().slice(-9),savedToFirebase=false;
- if(db&&fsModule){try{const orderRef=fsModule.doc(fsModule.collection(db,"orders"));orderId=orderRef.id;await fsModule.setDoc(orderRef,{...order,createdAt:fsModule.serverTimestamp()});await fsModule.setDoc(fsModule.doc(db,"orderStatus",orderId),{status:"Order Placed",updatedAt:fsModule.serverTimestamp()});savedToFirebase=true;}catch(err){console.error("Order save failed:",err);alert("Firebase could not save this order. WhatsApp will still open, but live tracking may not work.");}}
+ let orderId=String(Date.now()),savedToFirebase=false;
+ if(db&&fsModule){try{const orderRef=fsModule.doc(db,"orders",orderId);await fsModule.setDoc(orderRef,{...order,createdAt:fsModule.serverTimestamp()});await fsModule.setDoc(fsModule.doc(db,"orderStatus",orderId),{status:"Order Placed",updatedAt:fsModule.serverTimestamp()});savedToFirebase=true;}catch(err){console.error("Order save failed:",err);alert("Firebase could not save this order. WhatsApp will still open, but live tracking may not work.");}}
  order.id=orderId;order.date=new Date().toLocaleString();saveLocal(order);
  const trackLink=TRACK_URL+"?track="+encodeURIComponent(orderId),lines=orderItems.map(i=>`${i.name} x ${i.qty} = Rs.${i.price*i.qty}`+(i.packing?` + Packing Rs.${i.packing}`:"")).join("\n");
  const message=`SHREE CHAAT CORNER ORDER
