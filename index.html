@@ -152,7 +152,7 @@ function loadMenuFromOwner(){
   }
   const keys=Object.keys(data).sort((a,b)=>{const na=Number((a.match(/\d+$/)||[])[0]),nb=Number((b.match(/\d+$/)||[])[0]);if(Number.isFinite(na)&&Number.isFinite(nb))return na-nb;if(Number.isFinite(na))return -1;if(Number.isFinite(nb))return 1;return a.localeCompare(b);});
   const newItems=keys.map((key,index)=>{
-   const raw=data[key]||{},suffix=Number((key.match(/\d+$/)||[])[0]),id=Number.isFinite(suffix)&&suffix>0?suffix:(Number(raw.id)>0?Number(raw.id):index+1),fallback=fallbackItems.find(x=>x.id===id)||fallbackItems[index];
+   const raw=data[key]||{},fallbackByName=fallbackItems.find(x=>x.n.toLowerCase()===String(raw.name||"").trim().toLowerCase()),id=Number(raw.id)>0?Number(raw.id):(fallbackByName?.id||fallbackItems[index]?.id||index+1),fallback=fallbackItems.find(x=>x.id===id)||fallbackByName||fallbackItems[index];
    return {id,key,n:String(raw.name||fallback?.n||"Menu Item"),p:Number.isFinite(Number(raw.price))?Number(raw.price):(fallback?.p||0),available:raw.available!==false,emoji:raw.emoji||fallback?.emoji||"🍽️",photoUrl:typeof raw.photoUrl==="string"?raw.photoUrl:""};
   });
   items=newItems.filter(i=>i.available);
