@@ -61,6 +61,18 @@ header .festival-brand{display:flex;align-items:center;justify-content:center;ga
 @keyframes rocketPop{0%,100%{transform:translateY(2px) scale(.9);opacity:.75}50%{transform:translateY(-7px) scale(1.18);opacity:1}}
 @media(max-width:420px){header .festival-brand{gap:3px}.festival-side{font-size:20px}.festival-side .extra-spark{display:none}}
 
+
+/* Rockets travel around all four edges of the welcome greeting */
+.rocket-show{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.rocket-show .edge-rocket{position:absolute;font-size:clamp(22px,6vw,34px);filter:drop-shadow(0 0 8px #facc15);animation:rocketLaunch 2.8s ease-in-out infinite}
+.rocket-show .r1{left:4%;bottom:7%;animation-delay:0s}
+.rocket-show .r2{right:4%;bottom:9%;animation-delay:.7s}
+.rocket-show .r3{left:8%;top:13%;animation-delay:1.4s}
+.rocket-show .r4{right:8%;top:17%;animation-delay:2.1s}
+.rocket-show .r5{left:50%;bottom:2%;animation-delay:1s}
+@keyframes rocketLaunch{0%{transform:translateY(18px) rotate(-18deg) scale(.7);opacity:0}15%{opacity:1}65%{transform:translateY(-48px) rotate(8deg) scale(1.15);opacity:1}85%,100%{transform:translateY(-65px) scale(.4);opacity:0}}
+@media(prefers-reduced-motion:reduce){.rocket-show .edge-rocket{animation:none}}
+
 </style>
 </head>
 <body>
@@ -77,7 +89,7 @@ header .festival-brand{display:flex;align-items:center;justify-content:center;ga
  </div>
 </div>
 <header>
-<h1 class="festival-brand"><span class="festival-side left" aria-hidden="true">🪔<span class="rocket">🎆</span></span><span>🥗 Shree Chaat Corner</span><span class="festival-side right" aria-hidden="true"><span class="rocket">🎆</span>🪔</span></h1>
+<h1 class="festival-brand"><span class="festival-side left" aria-hidden="true">🪔<span class="rocket">🚀</span></span><span>🥗 Shree Chaat Corner</span><span class="festival-side right" aria-hidden="true"><span class="rocket">🚀</span>🪔</span></h1>
 <p>Good Food • Good Mood ❤️</p>
 <p class="festival-address">🪔 No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar,<br>Tirvottiyur, Chennai 600019 🪔</p>
 </header>
