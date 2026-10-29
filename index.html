@@ -34,7 +34,7 @@ a{color:#6d28d9;overflow-wrap:anywhere}
 .menu-photo{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 @media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
 /* Diwali welcome overlay */
-.diwali-fireworks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}.diwali-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(circle at top,#4c1d95 0%,#1e1045 58%,#100923 100%);color:#fff;text-align:center;overflow:hidden}
+.diwali-fireworks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}.diwali-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(circle at top,#4c1d95 0%,#1e1045 58%,#100923 100%);color:#fff;text-align:center;overflow:hidden}
 .diwali-card{position:relative;z-index:1;width:min(100%,420px);padding:28px 20px;border:1px solid #facc15;border-radius:24px;background:linear-gradient(160deg,#581c87ed,#1e1b4bed);box-shadow:0 0 35px #f59e0b55}
 .diwali-brand{font-size:clamp(22px,6vw,30px);font-weight:800;color:#fff7c2;text-shadow:0 0 15px #fbbf24;margin:12px 0}
 .diwali-title{font-size:clamp(30px,8vw,42px);line-height:1.12;color:#facc15;text-shadow:0 0 16px #f59e0b;margin:14px 0}
@@ -145,16 +145,18 @@ header .festival-brand{display:flex;align-items:center;justify-content:center;ga
 <footer style="text-align:center;padding:20px;font-size:12px;color:#78716c">Shree Chaat Corner • Chennai</footer>
 <script>
 
-// Gentle animated fireworks on the Diwali welcome screen
+// Visible colorful rocket bursts around both sides of the Diwali greeting
 (function(){
- const canvas=document.getElementById('diwaliFireworks');
- if(!canvas) return;
- const ctx=canvas.getContext('2d'); if(!ctx) return;
- let w=0,h=0,particles=[],lastBurst=0,raf=0;
- const colors=['#facc15','#fb923c','#f472b6','#67e8f9','#ffffff'];
+ const canvas=document.getElementById('diwaliFireworks'); if(!canvas)return;
+ const ctx=canvas.getContext('2d'); if(!ctx)return;
+ let w=0,h=0,particles=[],rockets=[],lastLaunch=0,raf=0;
+ const colors=['#facc15','#fb923c','#f472b6','#67e8f9','#ffffff','#c4b5fd','#fb7185'];
  function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);w=canvas.clientWidth;h=canvas.clientHeight;canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
- function burst(){const x=30+Math.random()*Math.max(1,w-60),y=30+Math.random()*Math.max(1,h*.55),color=colors[Math.floor(Math.random()*colors.length)],n=32+Math.floor(Math.random()*18);for(let i=0;i<n;i++){const a=Math.PI*2*i/n,s=1.2+Math.random()*3;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:45+Math.random()*30,max:75,color,r:1+Math.random()*1.8})}}
- function draw(t){if(!document.getElementById('diwaliWelcome'))return;ctx.clearRect(0,0,w,h);if(t-lastBurst>850){burst();lastBurst=t}particles=particles.filter(p=>p.life>0);for(const p of particles){ctx.globalAlpha=Math.min(1,p.life/18);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();p.x+=p.vx;p.y+=p.vy;p.vx*=.985;p.vy=p.vy*.985+.025;p.life--}ctx.globalAlpha=1;raf=requestAnimationFrame(draw)}
+ function explode(x,y,color){const n=42+Math.floor(Math.random()*18);for(let i=0;i<n;i++){const a=Math.PI*2*i/n,s=1.1+Math.random()*3.1;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:38+Math.random()*28,color,r:1+Math.random()*2})}}
+ function launch(){const side=Math.random()<.5?'left':'right';const x=side==='left'?w*(.08+Math.random()*.17):w*(.75+Math.random()*.17);const y=h*(.25+Math.random()*.42);rockets.push({x,y,cy:h+10,color:colors[Math.floor(Math.random()*colors.length)],speed:5+Math.random()*2,trail:[]})}
+ function draw(t){if(!document.getElementById('diwaliWelcome'))return;ctx.clearRect(0,0,w,h);if(t-lastLaunch>620){launch();lastLaunch=t}
+ rockets=rockets.filter(r=>{r.cy-=r.speed;r.trail.push({x:r.x,y:r.cy});if(r.trail.length>7)r.trail.shift();ctx.strokeStyle=r.color;ctx.lineWidth=2;ctx.beginPath();r.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.fillStyle='#fff7c2';ctx.beginPath();ctx.arc(r.x,r.cy,3,0,Math.PI*2);ctx.fill();if(r.cy<=r.y){explode(r.x,r.y,r.color);return false}return true});
+ particles=particles.filter(p=>p.life>0);for(const p of particles){ctx.globalAlpha=Math.min(1,p.life/15);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();p.x+=p.vx;p.y+=p.vy;p.vx*=.982;p.vy=p.vy*.982+.035;p.life--}ctx.globalAlpha=1;raf=requestAnimationFrame(draw)}
  resize();window.addEventListener('resize',resize);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)raf=requestAnimationFrame(draw);
  window.stopDiwaliFireworks=()=>{cancelAnimationFrame(raf);window.removeEventListener('resize',resize);ctx.clearRect(0,0,w,h)};
 })();
