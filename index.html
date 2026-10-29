@@ -33,9 +33,37 @@ label{font-weight:bold;font-size:14px}
 a{color:#6d28d9;overflow-wrap:anywhere}
 .menu-photo{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 @media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
+/* Diwali welcome overlay */
+.diwali-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(circle at top,#4c1d95 0%,#1e1045 58%,#100923 100%);color:#fff;text-align:center;overflow:hidden}
+.diwali-card{width:min(100%,420px);padding:28px 20px;border:1px solid #facc15;border-radius:24px;background:linear-gradient(160deg,#581c87ed,#1e1b4bed);box-shadow:0 0 35px #f59e0b55}
+.diwali-brand{font-size:clamp(22px,6vw,30px);font-weight:800;color:#fff7c2;text-shadow:0 0 15px #fbbf24;margin:12px 0}
+.diwali-title{font-size:clamp(30px,8vw,42px);line-height:1.12;color:#facc15;text-shadow:0 0 16px #f59e0b;margin:14px 0}
+.diwali-sub{line-height:1.6;color:#fef3c7}
+.diya-row{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:42px;margin:4px 0 16px}
+.diya{display:inline-block;filter:drop-shadow(0 0 8px #fbbf24);animation:diyaGlow 1.6s ease-in-out infinite alternate}
+.diya:nth-child(2){animation-delay:.5s}
+.diya:nth-child(3){animation-delay:1s}
+@keyframes diyaGlow{from{transform:scale(1);filter:drop-shadow(0 0 4px #fbbf24)}to{transform:scale(1.12);filter:drop-shadow(0 0 15px #fb923c)}}
+.diwali-enter{width:100%;margin-top:20px;border:0;border-radius:999px;padding:14px;background:linear-gradient(90deg,#f59e0b,#facc15);color:#3b0764;font-size:16px;font-weight:800;cursor:pointer}
+.diwali-sparkle{position:absolute;pointer-events:none;color:#fde68a;opacity:.75;animation:twinkle 2s infinite alternate}
+@keyframes twinkle{from{opacity:.25;transform:scale(.8)}to{opacity:1;transform:scale(1.25)}}
+@media(prefers-reduced-motion:reduce){.diya,.diwali-sparkle{animation:none}}
+
 </style>
 </head>
 <body>
+<div id="diwaliWelcome" class="diwali-overlay" role="dialog" aria-modal="true" aria-labelledby="diwaliGreetingTitle">
+ <span class="diwali-sparkle" style="top:9%;left:12%;font-size:25px">✦</span><span class="diwali-sparkle" style="top:17%;right:13%;font-size:20px">✧</span><span class="diwali-sparkle" style="bottom:13%;left:18%;font-size:22px">✦</span><span class="diwali-sparkle" style="bottom:20%;right:12%;font-size:26px">✧</span>
+ <div class="diwali-card">
+  <div class="diya-row"><span class="diya" aria-hidden="true">🪔</span><span aria-hidden="true">✨</span><span class="diya" aria-hidden="true">🪔</span></div>
+  <div class="diwali-brand">Shree Chaat Corner</div>
+  <h1 id="diwaliGreetingTitle" class="diwali-title">Happy Diwali!</h1>
+  <p class="diwali-sub">May your home be filled with light, happiness and delicious moments. ✨</p>
+  <p class="diwali-sub">Wishing you and your family a joyful and prosperous Deepawali.</p>
+  <div class="diya-row"><span class="diya" aria-hidden="true">🪔</span><span aria-hidden="true">🌟</span><span class="diya" aria-hidden="true">🪔</span></div>
+  <button class="diwali-enter" onclick="closeDiwaliWelcome()">Enter Shree Chaat Corner →</button>
+ </div>
+</div>
 <header>
 <h1>🥗 Shree Chaat Corner</h1>
 <p>Good Food • Good Mood ❤️</p>
@@ -92,6 +120,7 @@ a{color:#6d28d9;overflow-wrap:anywhere}
 </main>
 <footer style="text-align:center;padding:20px;font-size:12px;color:#78716c">Shree Chaat Corner • Chennai</footer>
 <script>
+window.closeDiwaliWelcome=()=>{const welcome=document.getElementById("diwaliWelcome");if(welcome)welcome.style.display="none";};
 const SHOP_WHATSAPP="918428656328";
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";
 const ADMIN_URL=TRACK_URL+"?admin=1";
