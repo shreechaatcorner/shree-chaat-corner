@@ -33,69 +33,13 @@ label{font-weight:bold;font-size:14px}
 a{color:#6d28d9;overflow-wrap:anywhere}
 .menu-photo{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px}
 @media(max-width:380px){.menu{grid-template-columns:1fr}.row{grid-template-columns:1fr}nav button{font-size:12px}}
-/* Diwali welcome overlay */
-.diwali-fireworks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}.diwali-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(circle at top,#4c1d95 0%,#1e1045 58%,#100923 100%);color:#fff;text-align:center;overflow:hidden}
-.diwali-card{position:relative;z-index:1;width:min(100%,420px);padding:28px 20px;border:1px solid #facc15;border-radius:24px;background:linear-gradient(160deg,#581c87ed,#1e1b4bed);box-shadow:0 0 35px #f59e0b55}
-.diwali-brand{font-size:clamp(22px,6vw,30px);font-weight:800;color:#fff7c2;text-shadow:0 0 15px #fbbf24;margin:12px 0}
-.diwali-title{font-size:clamp(30px,8vw,42px);line-height:1.12;color:#facc15;text-shadow:0 0 16px #f59e0b;margin:14px 0}
-.diwali-sub{line-height:1.6;color:#fef3c7}
-.diya-row{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:42px;margin:4px 0 16px}
-.diya{display:inline-block;filter:drop-shadow(0 0 8px #fbbf24);animation:diyaGlow 1.6s ease-in-out infinite alternate}
-.diya:nth-child(2){animation-delay:.5s}
-.diya:nth-child(3){animation-delay:1s}
-@keyframes diyaGlow{from{transform:scale(1);filter:drop-shadow(0 0 4px #fbbf24)}to{transform:scale(1.12);filter:drop-shadow(0 0 15px #fb923c)}}
-.diwali-enter{width:100%;margin-top:20px;border:0;border-radius:999px;padding:14px;background:linear-gradient(90deg,#f59e0b,#facc15);color:#3b0764;font-size:16px;font-weight:800;cursor:pointer}
-.diwali-sparkle{position:absolute;pointer-events:none;color:#fde68a;opacity:.75;animation:twinkle 2s infinite alternate}
-@keyframes twinkle{from{opacity:.25;transform:scale(.8)}to{opacity:1;transform:scale(1.25)}}
-@media(prefers-reduced-motion:reduce){.diya,.diwali-sparkle{animation:none}}
-
-
-/* Colorful Diwali fireworks beside the shop name and address */
-header{position:relative;overflow:hidden}
-.header-fireworks{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
-header .festival-brand,header>p{position:relative;z-index:1}
-header .festival-brand{display:flex;align-items:center;justify-content:center;gap:clamp(5px,2vw,16px);flex-wrap:nowrap;position:relative;z-index:1}
-.festival-side{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;font-size:clamp(22px,5vw,34px);filter:drop-shadow(0 0 7px #facc15)}
-.festival-burst{display:inline-block;font-size:1em;line-height:1;animation:festivalBurst 1.25s ease-in-out infinite alternate;filter:drop-shadow(0 0 7px #fb923c)}
-.festival-side.right .festival-burst{animation-delay:.6s}
-.festival-address{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:clamp(5px,2vw,12px);flex-wrap:wrap}
-.festival-address .festival-burst{font-size:clamp(20px,4.8vw,30px);flex-shrink:0}
-@keyframes festivalBurst{0%{transform:scale(.78) rotate(-12deg);opacity:.78;filter:drop-shadow(0 0 3px #facc15)}50%{transform:scale(1.18) rotate(8deg);opacity:1;filter:drop-shadow(0 0 13px #ec4899)}100%{transform:scale(.95) rotate(0);opacity:.9;filter:drop-shadow(0 0 11px #22d3ee)}}
-@media(max-width:420px){header .festival-brand{gap:3px}.festival-side{font-size:20px}.festival-address{gap:4px}.festival-address .festival-burst{font-size:20px}}
-
-
-/* Rockets travel around all four edges of the welcome greeting */
-.rocket-show{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
-.rocket-show .edge-rocket{position:absolute;font-size:clamp(22px,6vw,34px);filter:drop-shadow(0 0 8px #facc15);animation:rocketLaunch 2.8s ease-in-out infinite}
-.rocket-show .r1{left:4%;bottom:7%;animation-delay:0s}
-.rocket-show .r2{right:4%;bottom:9%;animation-delay:.7s}
-.rocket-show .r3{left:8%;top:13%;animation-delay:1.4s}
-.rocket-show .r4{right:8%;top:17%;animation-delay:2.1s}
-.rocket-show .r5{left:50%;bottom:2%;animation-delay:1s}
-@keyframes rocketLaunch{0%{transform:translateY(18px) rotate(-18deg) scale(.7);opacity:0}15%{opacity:1}65%{transform:translateY(-48px) rotate(8deg) scale(1.15);opacity:1}85%,100%{transform:translateY(-65px) scale(.4);opacity:0}}
-@media(prefers-reduced-motion:reduce){.rocket-show .edge-rocket{animation:none}}
-
 </style>
 </head>
 <body>
-<div id="diwaliWelcome" class="diwali-overlay" role="dialog" aria-modal="true" aria-labelledby="diwaliGreetingTitle">
- <canvas id="diwaliFireworks" class="diwali-fireworks" aria-hidden="true"></canvas>
- <span class="diwali-sparkle" style="top:9%;left:12%;font-size:25px">✦</span><span class="diwali-sparkle" style="top:17%;right:13%;font-size:20px">✧</span><span class="diwali-sparkle" style="bottom:13%;left:18%;font-size:22px">✦</span><span class="diwali-sparkle" style="bottom:20%;right:12%;font-size:26px">✧</span>
- <div class="diwali-card">
-  <div class="diya-row"><span class="diya" aria-hidden="true">🪔</span><span aria-hidden="true">✨</span><span class="diya" aria-hidden="true">🪔</span></div>
-  <div class="diwali-brand">Shree Chaat Corner</div>
-  <h1 id="diwaliGreetingTitle" class="diwali-title">Happy Deepawali!</h1>
-  <p class="diwali-sub">May your home be filled with light, happiness and delicious moments. ✨</p>
-  <p class="diwali-sub">Wishing you and your family a joyful and prosperous Deepawali.</p>
-  <div class="diya-row"><span class="diya" aria-hidden="true">🪔</span><span aria-hidden="true">🌟</span><span class="diya" aria-hidden="true">🪔</span></div>
-  <button class="diwali-enter" onclick="closeDiwaliWelcome()">Enter Shree Chaat Corner →</button>
- </div>
-</div>
 <header>
-<canvas id="headerFireworks" class="header-fireworks" aria-hidden="true"></canvas>
-<h1 class="festival-brand"><span class="festival-side left" aria-hidden="true">🪔</span><span>🥗 Shree Chaat Corner</span><span class="festival-side right" aria-hidden="true">🪔</span></h1>
+<h1>🥗 Shree Chaat Corner</h1>
 <p>Good Food • Good Mood ❤️</p>
-<p class="festival-address"><span aria-hidden="true">🪔</span><span>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar,<br>Tirvottiyur, Chennai 600019</span><span aria-hidden="true">🪔</span></p>
+<p>No.10, 12th St, Saraswathi Nagar, Ambedkar Nagar,<br>Tirvottiyur, Chennai 600019</p>
 </header>
 <nav>
 <button class="active" onclick="showPage('home',this)">🏠 Home</button>
@@ -149,35 +93,6 @@ header .festival-brand{display:flex;align-items:center;justify-content:center;ga
 <footer style="text-align:center;padding:20px;font-size:12px;color:#78716c">Shree Chaat Corner • Chennai</footer>
 <script>
 
-// Visible colorful rocket bursts around both sides of the Diwali greeting
-(function(){
- const canvas=document.getElementById('diwaliFireworks'); if(!canvas)return;
- const ctx=canvas.getContext('2d'); if(!ctx)return;
- let w=0,h=0,particles=[],rockets=[],lastLaunch=0,raf=0;
- const colors=['#facc15','#fb923c','#f472b6','#67e8f9','#ffffff','#c4b5fd','#fb7185'];
- function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);w=canvas.clientWidth;h=canvas.clientHeight;canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
- function explode(x,y,color){const n=42+Math.floor(Math.random()*18);for(let i=0;i<n;i++){const a=Math.PI*2*i/n,s=1.1+Math.random()*3.1;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:38+Math.random()*28,color,r:1+Math.random()*2})}}
- function launch(){const side=Math.random()<.5?'left':'right';const x=side==='left'?w*(.08+Math.random()*.17):w*(.75+Math.random()*.17);const y=h*(.25+Math.random()*.42);rockets.push({x,y,cy:h+10,color:colors[Math.floor(Math.random()*colors.length)],speed:5+Math.random()*2,trail:[]})}
- function draw(t){if(!document.getElementById('diwaliWelcome'))return;ctx.clearRect(0,0,w,h);if(t-lastLaunch>620){launch();lastLaunch=t}
- rockets=rockets.filter(r=>{r.cy-=r.speed;r.trail.push({x:r.x,y:r.cy});if(r.trail.length>7)r.trail.shift();ctx.strokeStyle=r.color;ctx.lineWidth=2;ctx.beginPath();r.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.fillStyle='#fff7c2';ctx.beginPath();ctx.arc(r.x,r.cy,3,0,Math.PI*2);ctx.fill();if(r.cy<=r.y){explode(r.x,r.y,r.color);return false}return true});
- particles=particles.filter(p=>p.life>0);for(const p of particles){ctx.globalAlpha=Math.min(1,p.life/15);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();p.x+=p.vx;p.y+=p.vy;p.vx*=.982;p.vy=p.vy*.982+.035;p.life--}ctx.globalAlpha=1;raf=requestAnimationFrame(draw)}
- resize();window.addEventListener('resize',resize);if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)raf=requestAnimationFrame(draw);
- window.stopDiwaliFireworks=()=>{cancelAnimationFrame(raf);window.removeEventListener('resize',resize);ctx.clearRect(0,0,w,h)};
-})();
-// Run the same real rocket-and-burst animation in the Home header as well as the greeting.
-(function(){
- const canvas=document.getElementById('headerFireworks'); if(!canvas)return;
- const ctx=canvas.getContext('2d'); if(!ctx)return;
- let w=0,h=0,particles=[],rockets=[],last=0,raf=0;
- const colors=['#facc15','#fb923c','#f472b6','#67e8f9','#fff','#c4b5fd','#fb7185'];
- function resize(){const d=Math.min(devicePixelRatio||1,2);w=canvas.clientWidth;h=canvas.clientHeight;canvas.width=Math.floor(w*d);canvas.height=Math.floor(h*d);ctx.setTransform(d,0,0,d,0,0)}
- function burst(x,y,c){for(let i=0,n=36;i<n;i++){const a=2*Math.PI*i/n,v=1+Math.random()*2.8;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:28+Math.random()*24,c})}}
- function frame(t){ctx.clearRect(0,0,w,h);if(t-last>750){const x=Math.random()<.5?w*(.08+Math.random()*.18):w*(.74+Math.random()*.18);rockets.push({x,y:h*(.2+Math.random()*.4),cy:h+5,c:colors[Math.floor(Math.random()*colors.length)]});last=t}
- rockets=rockets.filter(r=>{r.cy-=4.5;ctx.fillStyle=r.c;ctx.beginPath();ctx.arc(r.x,r.cy,2.5,0,7);ctx.fill();if(r.cy<=r.y){burst(r.x,r.y,r.c);return false}return true});
- particles=particles.filter(p=>p.life-->0);for(const p of particles){ctx.globalAlpha=Math.min(1,p.life/10);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,1.8,0,7);ctx.fill();p.x+=p.vx;p.y+=p.vy;p.vx*=.98;p.vy=p.vy*.98+.025}ctx.globalAlpha=1;raf=requestAnimationFrame(frame)}
- resize();window.addEventListener('resize',resize);if(!matchMedia('(prefers-reduced-motion: reduce)').matches)raf=requestAnimationFrame(frame);
-})();
-window.closeDiwaliWelcome=()=>{if(window.stopDiwaliFireworks)window.stopDiwaliFireworks();const welcome=document.getElementById("diwaliWelcome");if(welcome)welcome.style.display="none";};
 const SHOP_WHATSAPP="918428656328";
 const TRACK_URL="https://shreechaatcorner.github.io/shree-chaat-corner/";
 const ADMIN_URL=TRACK_URL+"?admin=1";
